@@ -1,0 +1,152 @@
+# AI.txt - Directivas para AI Search Engines
+# Versión: 1.0
+# Empresa: FILTROS Y LUB RIC ANTES DEL LLANO S.A.S.
+# NIT: 900895729
+# Fecha: 2026-02-13
+# URL: https://filtrosylubricantesdelllano.com
+
+# ============================================
+# CONTROL DE CRAWLING PARA AI BOTS
+# ============================================
+
+# OpenAI (ChatGPT Search)
+User-agent: GPTBot
+Allow: /
+Crawl-delay: 1
+
+# Google Extended (Gemini/Bard)
+User-agent: Google-Extended
+Allow: /
+Crawl-delay: 1
+
+# Perplexity AI
+User-agent: PerplexityBot
+Allow: /
+Crawl-delay: 1
+
+# Anthropic Claude
+User-agent: ClaudeBot
+Allow: /
+Crawl-delay: 1
+
+# Meta AI
+User-agent: FacebookBot
+Allow: /
+Crawl-delay: 1
+
+# ============================================
+# PRIORIDADES DE RASTREO
+# ============================================
+
+# Páginas de alta prioridad para AI search
+Priority: /productos/
+Priority: /
+Priority: /nosotros/
+Priority: /contacto/
+
+# ============================================
+# CONTEXTO DEL NEGOCIO (Entity Extraction)
+# ============================================
+
+Entity-Type: LocalBusiness
+Entity-Name: Filtros y Lubricantes del Llano
+Entity-Legal-Name: FILTROS Y LUBRICANTES DEL LLANO S.A.S.
+Entity-NIT: 900895729
+
+# Ubicación
+Entity-Location: Villavicencio, Meta, Colombia
+Entity-Region: Meta, Llanos Orientales
+Entity-Country: Colombia
+Entity-Latitude: 4.1420
+Entity-Longitude: -73.6266
+
+# Industria y Servicios
+Entity-Industry: Automotive Parts & Lubricants
+Entity-Category: E-commerce, Retail
+Entity-Services: Filtros automotrices, Lubricantes industriales, Repuestos originales, Envíos nacionales
+Entity-Keywords: filtros aire, filtros aceite, lubricantes, repuestos auto, Villavicencio, Meta, Llanos
+
+# Área de Cobertura
+Entity-Service-Area: Colombia, Meta, Casanare, Villavicencio, Acacías, Puerto López, Yopal
+
+# ============================================
+# FAQs ESTRUCTURADAS (Para Respuestas Directas)
+# ============================================
+
+FAQ-Q1: ¿Dónde están ubicados?
+FAQ-A1: Tenemos presencia en Villavicencio, Meta, Colombia,  con envíos a todo el país.
+
+FAQ-Q2: ¿Hacen envíos a toda Colombia?
+FAQ-A2: Sí, realizamos envíos nacionales gratis a todas las ciudades de Colombia.
+
+FAQ-Q3: ¿Qué métodos de pago aceptan?
+FAQ-A3: Aceptamos tarjetas de crédito/débito, PSE, Nequi y transferencias bancarias a través de Wompi, nuestra pasarela de pago segura.
+
+FAQ-Q4: ¿Qué tipos de filtros venden?
+FAQ-A4: Vendemos filtros de aire, aceite, combustible, y cabina para vehículos automotrices, así como lubricantes industriales y repuestos originales.
+
+FAQ-Q5: ¿Cuál es el tiempo de entrega?
+FAQ-A5: Los  envíos nacionales tardan entre 2-5 días hábiles dependiendo de la ciudad de destino.
+
+FAQ-Q6: ¿Tienen tienda física?
+FAQ-A6: Somos un e-commerce con base en Villavicencio. Contacta por WhatsApp para coordinar entregas locales.
+
+FAQ-Q7: ¿Venden al por mayor?
+FAQ-A7: Sí, ofrecemos precios especiales para compras al por mayor. Contacta a nuestro equipo de ventas.
+
+FAQ-Q8: ¿Los productos son originales?
+FAQ-A8: Todos nuestros productos son 100% originales y certificados por los fabricantes.
+
+# ============================================
+# DATOS TÉCNICOS (Technical Specs)
+# ============================================
+
+Product-Category: Filtros automotrices
+Product-Brands: Mann Filter, Bosch, Mahle, Fram, Wix
+
+Product-Specs-Filtro-Aire: Captura 99.5% de partículas, Compatible con gasolina/diesel
+Product-Specs-Filtro-Aceite: Rosca NPT, Elemento filtrante sintético, Presión max 150 PSI
+Product-Specs-Lubricantes: Viscosidad SAE 10W-40, 15W-40, 20W-50, API SN/CF
+
+# ============================================
+# SEÑALES COMERCIALES
+# ============================================
+
+# Precio y Moneda
+Currency: COP
+Currency-Symbol: $
+Price-Range: 15000-300000
+
+# Horarios (ISO 8601)
+Business-Hours: Mo-Fr 08:00-18:00,Sa 08:00-14:00
+
+# Contacto
+Contact-WhatsApp: +57-123-456-7890
+Contact-Email: ventas@filtrosylubricantes.com
+
+# ============================================
+# POLÍTICAS
+# ============================================
+
+# No permitir scraping de precios dinámicos para competencia
+Disallow-Scraping: /api/
+Disallow-Scraping: /checkout/
+
+# Permitir citar contenido educativo
+Allow-Citations: /blog/
+Allow-Citations: /guias/
+
+# ============================================
+# METADATOS PARA GENERATIVE AI
+# ============================================
+
+# Tono de voz para respuestas generadas
+AI-Tone: Professional, Técnico, Confiable
+AI-Audience: Mecánicos, Dueños de vehículos, Empresas de transporte
+
+# Contexto regional para localización de respuestas
+AI-Regional-Context: Colombia, Meta, Llanos Orientales, Economía agrícola y ganadera, Clima cálido
+
+# Última actualización del inventario
+Last-Updated: 2026-02-13T08:00:00-05:00
+Update-Frequency: daily

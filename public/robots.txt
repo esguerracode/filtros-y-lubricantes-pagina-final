@@ -1,0 +1,27 @@
+# robots.txt - Filtros y Lubricantes del Llano
+# Actualizado: 2026-02-13
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Crawl-delay: 1
+
+# AI Search Engines (permitir acceso completo)
+User-agent: GPTBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: FacebookBot
+Allow: /
+
+# Sitemaps
+Sitemap: https://filtrosylubricantes.co/sitemap.xml
+Sitemap: https://filtrosylubricantes.co/ai.txt
