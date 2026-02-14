@@ -33,7 +33,7 @@ export const PRODUCTS: Product[] = [
     price: 45000,
     category: Category.FILTROS,
     description: 'Filtro de aire motor para Toyota Revo.',
-    image: '/images/products/111.jpeg'
+    image: '/images/products/111.png'
   },
   {
     id: 112,
@@ -41,7 +41,7 @@ export const PRODUCTS: Product[] = [
     price: 35000,
     category: Category.FILTROS,
     description: 'Filtro de aire acondicionado para Toyota Revo.',
-    image: '/images/products/112.jpeg'
+    image: '/images/products/112.png'
   },
   {
     id: 113,
@@ -137,7 +137,7 @@ export const PRODUCTS: Product[] = [
     price: 15000,
     category: Category.FILTROS,
     description: 'Filtro de aceite para Nissan NP 300.',
-    image: '/images/products/120.jpeg'
+    image: '/images/products/120.png'
   },
   {
     id: 105,
@@ -145,7 +145,7 @@ export const PRODUCTS: Product[] = [
     price: 160000,
     category: Category.LUBRICANTES,
     description: 'Aceite lubricante Mobil 10W30 para motores gasolina. Presentación: Galón.',
-    image: '/images/products/105.jpeg'
+    image: '/images/products/105.png'
   },
   {
     id: 121,
@@ -173,7 +173,7 @@ export const PRODUCTS: Product[] = [
     price: 25000,
     category: Category.FILTROS,
     description: 'Filtro de aceite para Nissan NP 300 Diesel.',
-    image: '/images/products/122.jpeg'
+    image: '/images/products/122.png'
   },
   {
     id: 123,
@@ -181,7 +181,7 @@ export const PRODUCTS: Product[] = [
     price: 65000,
     category: Category.FILTROS,
     description: 'Filtro de combustible para Nissan NP 300 Diesel.',
-    image: '/images/products/123.jpeg'
+    image: '/images/products/123.png'
   },
 
   // ============================================================
@@ -201,7 +201,7 @@ export const PRODUCTS: Product[] = [
     price: 25000,
     category: Category.FILTROS,
     description: 'Filtro de aceite para Ford Ranger.',
-    image: '/images/products/124.jpeg'
+    image: '/images/products/124.png'
   },
   {
     id: 125,
@@ -297,7 +297,7 @@ export const PRODUCTS: Product[] = [
     price: 110000,
     category: Category.FILTROS,
     description: 'Filtro de aire acondicionado original Ford MB3Z19N619C para Ranger 2025-2026.',
-    image: '/images/products/133.jpeg'
+    image: '/images/products/133.png'
   },
   {
     id: 110,

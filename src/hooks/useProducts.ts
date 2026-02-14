@@ -14,15 +14,51 @@ export interface Product {
   categories?: any[];
 }
 
-const CACHE_KEY = 'wc_products_cache';
+const CACHE_KEY = 'wc_products_cache_v5';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+
+// Mapeo manual de priorización para asegurar que las fotos reales se vean
+// incluso si WooCommerce trae placeholders.
+const LOCAL_IMAGE_OVERRIDE: Record<string, string> = {
+  'KIT TOYOTA REVO (Pack Completo)': '/images/products/101.png',
+  'Filtro Aire AIP 977 (Toyota Revo)': '/images/products/111.png',
+  'Filtro Cabina ACP 138 (Toyota Revo)': '/images/products/112.png',
+  'Filtro Aceite OLP 067 (Toyota Revo)': '/images/products/113.jpeg',
+  'Filtro Combustible FLP 476 (Toyota Revo)': '/images/products/114.jpeg',
+  'Mobil Delvac 15W40 Galón': '/images/products/102.jpeg',
+  'KIT TOYOTA VIGO (Pack Completo)': '/images/products/103.jpeg',
+  'Filtro Aire AIP 651 (Toyota Vigo)': '/images/products/115.jpeg',
+  'Filtro Cabina ACP 071 (Toyota Vigo)': '/images/products/116.jpeg',
+  'Filtro Combustible FLP 355 (Toyota Vigo)': '/images/products/117.jpeg',
+  'KIT NISSAN NP 300 GASOLINA (Pack)': '/images/products/104.png',
+  'Filtro Aire AIP 961 (Nissan NP300)': '/images/products/118.png',
+  'Filtro Cabina ACP 123 (Nissan NP300)': '/images/products/119.jpeg',
+  'Filtro Aceite OLP 019 (Nissan NP300)': '/images/products/120.png',
+  'Aceite Mobil 10W30 Galón': '/images/products/105.png',
+  'Aceite Mobil 10W30 (1/4 Galón)': '/images/products/121.jpeg',
+  'KIT NISSAN NP 300 DIESEL (Pack)': '/images/products/106.png',
+  'Filtro Aceite OLP 077 (Nissan NP300 Diesel)': '/images/products/122.png',
+  'Filtro Combustible FLP 472 (Nissan NP300 Diesel)': '/images/products/123.png',
+  'KIT FORD RANGER FILTROS NACIONALES (Pack)': '/images/products/107.jpeg',
+  'Filtro Aceite OLP 115 (Ford Ranger)': '/images/products/124.png',
+  'Filtro Combustible FLP 509 (Ford Ranger)': '/images/products/125.jpeg',
+  'Aceite Motorcraft 10W30 (1/4 Galón)': '/images/products/126.jpeg',
+  'KIT FORD RANGER ORIGINAL 2022-2024 (Pack)': '/images/products/108.jpeg',
+  'Filtro Combustible EB3Z-9365B (Ford Original)': '/images/products/127.jpeg',
+  'Filtro Aire Motor MG2MZ9601B (Ford Original)': '/images/products/128.jpeg',
+  'Filtro Aceite JU2Z-6731A (Ford Original)': '/images/products/129.jpeg',
+  'Filtro Aire Acondicionado HB3Z19N619B (Ford Original)': '/images/products/130.jpeg',
+  'KIT FORD RANGER ORIGINAL 2025-2026 (Pack)': '/images/products/109.jpeg',
+  'Filtro Combustible KV61-9155AG (Ford Original 2025)': '/images/products/131.jpeg',
+  'Filtro Aire Motor MB3Z-9601C (Ford Original 2025)': '/images/products/132.jpeg',
+  'Filtro Aire Acondicionado MB3Z19N619C (Ford Original 2025)': '/images/products/133.png',
+  'Aceite Motorcraft 5W30 (1/4 Galón)': '/images/products/110.png'
+};
 
 const mapWCToLocal = (wcProducts: Product[]): LocalProduct[] => {
   return wcProducts.map(p => {
     let priceNumeric = parseFloat(p.price) || parseFloat(p.regular_price) || 0;
 
-    // Normalización: Si el precio es menor a 1000, asumimos que está en USD y convertimos a COP (Tasa aprox 4000)
-    // El usuario solicitó ajustar esto directamente aquí.
     if (priceNumeric > 0 && priceNumeric < 1000) {
       priceNumeric = priceNumeric * 4000;
     }
@@ -33,7 +69,8 @@ const mapWCToLocal = (wcProducts: Product[]): LocalProduct[] => {
       price: priceNumeric,
       category: mapCategory(p.categories),
       description: p.description || '',
-      image: p.images?.[0]?.src || '/placeholder.jpg'
+      // Priorizar imagen local si existe en nuestro mapa, sino usar la de WC
+      image: LOCAL_IMAGE_OVERRIDE[p.name] || p.images?.[0]?.src || '/placeholder.jpg'
     };
   });
 };
@@ -100,12 +137,6 @@ export const useProducts = () => {
           throw new Error(`Error ${response.status}: ${response.statusText}`);
         }
 
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-          const text = await response.text();
-          throw new Error(`Respuesta no JSON recibida (${contentType}). Posible error de servidor o redirección.`);
-        }
-
         const data: Product[] = await response.json();
         const mappedProducts = mapWCToLocal(data);
 
@@ -120,13 +151,9 @@ export const useProducts = () => {
         setLoading(false);
       } catch (err: any) {
         clearTimeout(timeoutId);
-
-        // 3. Fallback a datos hardcoded
-        console.warn('⚠️ WooCommerce no disponible, usando datos locales');
-        console.error('Error:', err.message);
-
+        console.warn('⚠️ WooCommerce no disponible o error, usando datos locales');
         setProducts(PRODUCTS);
-        setError('Mostrando catálogo local (WooCommerce temporalmente no disponible)');
+        setError('Mostrando catálogo local');
         setLoading(false);
       }
     };
