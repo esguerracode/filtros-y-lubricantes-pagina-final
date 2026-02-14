@@ -42,6 +42,7 @@ temp_zip_content/
 temp_kits_unzipped/
 extracted_images/
 *.zip
+!catalog_images.zip
 *.docx
 !KITS.docx
 # No ignorar KITS.docx si es necesario como fuente, pero mejor ignorarlo si ya extrajimos
