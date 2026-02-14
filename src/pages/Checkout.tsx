@@ -4,12 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../components/CartContext';
 import { ArrowLeft, Send, MapPin, User, Phone, Check, ShieldCheck, Lock, AlertCircle, Truck, Sparkles } from 'lucide-react';
 import { generateWompiPaymentLink, prepareWompiTransaction } from '../services/wompiService';
+import { preparePayUPayload, PAYU_CHECKOUT_URL } from '../services/payuService';
 import type { WompiCustomer, WompiShippingAddress } from '../services/wompiService';
 import ValidatedInput from '../components/ValidatedInput';
 
 const Checkout: React.FC = () => {
   const { cart, totalPrice, totalItems } = useCart();
   const navigate = useNavigate();
+
+  const [paymentMethod, setPaymentMethod] = useState<'wompi' | 'payu'>('wompi');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // State con persistencia desde localStorage
   const [shippingData, setShippingData] = useState(() => {
@@ -66,71 +70,73 @@ const Checkout: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (Object.keys(errors).length > 0) return;
+    setIsSubmitting(true);
 
     // Guardar datos de envío localmente para recuperar en success page
     localStorage.setItem('last_shipping', JSON.stringify(shippingData));
 
     // Preparar ciudad y departamento limpios
-    const cleanCityForRef = shippingData.ciudad.replace(/[.,]/g, '').trim();
-    const cityPartsForRef = shippingData.ciudad.split(',');
-    const departmentForRef = cityPartsForRef.length > 1
-      ? cityPartsForRef[1].replace(/[.,]/g, '').trim()
-      : cleanCityForRef;
-
-    // Guardar referencia de orden
-    const orderReference = prepareWompiTransaction(
-      cart,
-      totalPrice,
-      { email: shippingData.email, fullName: shippingData.nombre, phoneNumber: shippingData.telefono.replace(/\s/g, ''), phoneNumberPrefix: '+57' },
-      { address: shippingData.direccion, city: cleanCityForRef, department: departmentForRef, country: 'CO' }
-    ).reference;
-    localStorage.setItem('last_order_ref', orderReference);
-
-    // Preparar datos del cliente
-    // CRÍTICO: phoneNumber debe ser SOLO DÍGITOS (sin +, sin espacios, sin guiones)
-    const cleanPhoneNumber = shippingData.telefono.replace(/\D/g, '');  // Solo dígitos
-
-    const customerData: WompiCustomer = {
-      email: shippingData.email,
-      fullName: shippingData.nombre,
-      phoneNumber: cleanPhoneNumber,  // Solo dígitos: "3026852238"
-      phoneNumberPrefix: '+57'         // Prefijo separado: "+57"
-      // legalId y legalIdType son opcionales - el widget los pide al usuario
-    };
-
-    // Preparar dirección de envío
-    // Limpiar ciudad: remover puntos, comas y espacios extras
     const cleanCity = shippingData.ciudad.replace(/[.,]/g, '').trim();
-
-    // Extraer departamento (después de la coma) o usar ciudad si no hay coma
     const cityParts = shippingData.ciudad.split(',');
     const department = cityParts.length > 1
       ? cityParts[1].replace(/[.,]/g, '').trim()
       : cleanCity;
 
-    const shippingAddress: WompiShippingAddress = {
-      address: shippingData.direccion,
-      city: cleanCity,
-      department: department,  // ✓ "department" (NO "region")
-      country: 'CO'
-    };
+    // 1. FLUJO WOMPI
+    if (paymentMethod === 'wompi') {
+      const customerData: WompiCustomer = {
+        email: shippingData.email,
+        fullName: shippingData.nombre,
+        phoneNumber: shippingData.telefono.replace(/\D/g, ''),
+        phoneNumberPrefix: '+57'
+      };
 
-    // Preparar transacción de Wompi
-    const transactionData = prepareWompiTransaction(
-      cart,
-      totalPrice,
-      customerData,
-      shippingAddress
-    );
+      const shippingAddress: WompiShippingAddress = {
+        address: shippingData.direccion,
+        city: cleanCity,
+        department: department,
+        country: 'CO'
+      };
 
-    // DEBUG: Ver qué datos se están enviando
-    console.log('🔍 Transaction Data:', JSON.stringify(transactionData, null, 2));
+      const transactionData = prepareWompiTransaction(
+        cart,
+        totalPrice,
+        customerData,
+        shippingAddress
+      );
 
-    // SOLUCIÓN: Usar link de pago directo en lugar de widget
-    // El widget modal tiene problemas en localhost con claves de producción
-    const paymentLink = generateWompiPaymentLink(transactionData);
-    console.log('🔗 Redirecting to Wompi payment page:', paymentLink);
-    window.location.href = paymentLink;
+      localStorage.setItem('last_order_ref', transactionData.reference);
+      const paymentLink = generateWompiPaymentLink(transactionData);
+      window.location.href = paymentLink;
+    }
+    // 2. FLUJO PAYU
+    else {
+      const orderRef = `FYL-${Date.now()}`;
+      localStorage.setItem('last_order_ref', orderRef);
+
+      const payload = preparePayUPayload(
+        orderRef,
+        totalPrice,
+        `Compra en Filtros y Lubricantes - ${cart.length} productos`,
+        shippingData.email
+      );
+
+      // Crear formulario oculto para PayU (requerido por su arquitectura WebCheckout)
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = PAYU_CHECKOUT_URL;
+
+      Object.entries(payload).forEach(([key, value]) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = value as string;
+        form.appendChild(input);
+      });
+
+      document.body.appendChild(form);
+      form.submit();
+    }
   };
 
 
@@ -280,6 +286,59 @@ const Checkout: React.FC = () => {
                 value={shippingData.notas}
                 onChange={e => setShippingData({ ...shippingData, notas: e.target.value })}
               />
+            </div>
+
+            {/* Selector de Método de Pago "Perfect Checkout" */}
+            <div className="pt-8 border-t border-gray-100 space-y-6">
+              <label className="flex items-center gap-2 text-[10px] font-black text-[#054a29] uppercase tracking-widest">
+                <Sparkles size={14} /> Selecciona tu Método de Pago
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Wompi Option */}
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('wompi')}
+                  className={`relative p-6 rounded-3xl border-2 transition-all text-left flex flex-col gap-3 group active:scale-95 ${paymentMethod === 'wompi'
+                      ? 'border-[#054a29] bg-emerald-50/50'
+                      : 'border-gray-100 hover:border-emerald-200 bg-white'
+                    }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-black text-sm uppercase tracking-tight">Wompi / Bancolombia</span>
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'wompi' ? 'border-[#054a29] bg-[#054a29]' : 'border-gray-200'
+                      }`}>
+                      {paymentMethod === 'wompi' && <Check size={12} className="text-white" />}
+                    </div>
+                  </div>
+                  <p className="text-[10px] font-bold text-gray-500 leading-relaxed">PSE, Nequi, Botón Bancolombia y Tarjetas.</p>
+                  <div className="flex items-center gap-2 mt-auto grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all">
+                    <img src="https://wompi.co/wp-content/uploads/2021/08/logo-nequi.png" alt="Nequi" className="h-3" />
+                    <img src="https://wompi.co/wp-content/uploads/2021/08/logo-pse.png" alt="PSE" className="h-3" />
+                  </div>
+                </button>
+
+                {/* PayU Option */}
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('payu')}
+                  className={`relative p-6 rounded-3xl border-2 transition-all text-left flex flex-col gap-3 group active:scale-95 ${paymentMethod === 'payu'
+                      ? 'border-[#054a29] bg-emerald-50/50'
+                      : 'border-gray-100 hover:border-emerald-200 bg-white'
+                    }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-black text-sm uppercase tracking-tight">PayU Latam</span>
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'payu' ? 'border-[#054a29] bg-[#054a29]' : 'border-gray-200'
+                      }`}>
+                      {paymentMethod === 'payu' && <Check size={12} className="text-white" />}
+                    </div>
+                  </div>
+                  <p className="text-[10px] font-bold text-gray-500 leading-relaxed">Tarjetas internacionales y redes de recaudo (Efecty).</p>
+                  <div className="flex items-center gap-2 mt-auto grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all">
+                    <img src="https://www.payu.com.co/wp-content/uploads/2020/03/logo-payu.png" alt="PayU" className="h-3" />
+                  </div>
+                </button>
+              </div>
             </div>
 
             <div className="pt-8 border-t border-gray-100">
