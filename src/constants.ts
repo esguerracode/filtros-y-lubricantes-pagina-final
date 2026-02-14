@@ -25,7 +25,7 @@ export const PRODUCTS: Product[] = [
     price: 390000,
     category: Category.FILTROS,
     description: 'Pack completo de filtros para Toyota Revo. Incluye: AIP 977, ACP 138, OLP 067, FLP 476 + 2 galones Mobil Delvac 15W40.',
-    image: '/images/products/101.jpeg'
+    image: '/images/products/101.png'
   },
   {
     id: 111,
@@ -33,7 +33,7 @@ export const PRODUCTS: Product[] = [
     price: 45000,
     category: Category.FILTROS,
     description: 'Filtro de aire motor para Toyota Revo.',
-    image: '/images/products/111.jpeg um.photos/seed/aip977/400/400'
+    image: '/images/products/111.jpeg'
   },
   {
     id: 112,
@@ -41,7 +41,7 @@ export const PRODUCTS: Product[] = [
     price: 35000,
     category: Category.FILTROS,
     description: 'Filtro de aire acondicionado para Toyota Revo.',
-    image: '/images/products/101.jpeg'
+    image: '/images/products/112.jpeg'
   },
   {
     id: 113,
@@ -49,7 +49,7 @@ export const PRODUCTS: Product[] = [
     price: 15000,
     category: Category.FILTROS,
     description: 'Filtro de aceite para Toyota Revo.',
-    image: '/images/products/111.jpeg'
+    image: '/images/products/113.jpeg'
   },
   {
     id: 114,
@@ -57,7 +57,7 @@ export const PRODUCTS: Product[] = [
     price: 45000,
     category: Category.FILTROS,
     description: 'Filtro de combustible para Toyota Revo.',
-    image: '/images/products/101.jpeg'
+    image: '/images/products/114.jpeg'
   },
   {
     id: 102,
@@ -65,7 +65,7 @@ export const PRODUCTS: Product[] = [
     price: 125000,
     category: Category.LUBRICANTES,
     description: 'Aceite Mobil Delvac MX 15W-40 para motores diesel. Presentación: Galón.',
-    image: '/images/products/102.png'
+    image: '/images/products/102.jpeg'
   },
 
   // ============================================================
@@ -77,7 +77,7 @@ export const PRODUCTS: Product[] = [
     price: 385000,
     category: Category.FILTROS,
     description: 'Pack completo de filtros para Toyota Vigo. Incluye: AIP 651, ACP 071, OLP 067, FLP 355 + 2 galones Mobil Delvac 15W40.',
-    image: '/images/products/102.png'
+    image: '/images/products/103.jpeg'
   },
   {
     id: 115,
@@ -101,7 +101,7 @@ export const PRODUCTS: Product[] = [
     price: 35000,
     category: Category.FILTROS,
     description: 'Filtro de combustible para Toyota Vigo.',
-    image: '/images/products/115.jpeg'
+    image: '/images/products/117.jpeg'
   },
 
   // ============================================================
@@ -129,7 +129,7 @@ export const PRODUCTS: Product[] = [
     price: 35000,
     category: Category.FILTROS,
     description: 'Filtro de aire acondicionado para Nissan NP 300.',
-    image: '/images/products/116.jpeg'
+    image: '/images/products/119.jpeg'
   },
   {
     id: 120,
@@ -145,7 +145,7 @@ export const PRODUCTS: Product[] = [
     price: 160000,
     category: Category.LUBRICANTES,
     description: 'Aceite lubricante Mobil 10W30 para motores gasolina. Presentación: Galón.',
-    image: '/images/products/104.png'
+    image: '/images/products/105.jpeg'
   },
   {
     id: 121,
@@ -153,7 +153,7 @@ export const PRODUCTS: Product[] = [
     price: 45000,
     category: Category.LUBRICANTES,
     description: 'Aceite lubricante Mobil 10W30. Presentación: Cuarto de galón.',
-    image: '/images/products/118.png'
+    image: '/images/products/121.jpeg'
   },
 
   // ============================================================
@@ -165,7 +165,7 @@ export const PRODUCTS: Product[] = [
     price: 415000,
     category: Category.FILTROS,
     description: 'Pack de filtros para Nissan NP 300 Motor Diesel. Incluye: AIP 961, ACP 123, OLP 077, FLP 472 + 2 galones Mobil Delvac 15W40.',
-    image: '/images/products/106.jpeg'
+    image: '/images/products/106.png'
   },
   {
     id: 122,
@@ -173,7 +173,7 @@ export const PRODUCTS: Product[] = [
     price: 25000,
     category: Category.FILTROS,
     description: 'Filtro de aceite para Nissan NP 300 Diesel.',
-    image: '/images/products/120.jpeg'
+    image: '/images/products/122.jpeg'
   },
   {
     id: 123,
@@ -181,7 +181,7 @@ export const PRODUCTS: Product[] = [
     price: 65000,
     category: Category.FILTROS,
     description: 'Filtro de combustible para Nissan NP 300 Diesel.',
-    image: '/images/products/106.jpeg'
+    image: '/images/products/123.jpeg'
   },
 
   // ============================================================
@@ -209,7 +209,7 @@ export const PRODUCTS: Product[] = [
     price: 100000,
     category: Category.FILTROS,
     description: 'Filtro de combustible para Ford Ranger.',
-    image: '/images/products/107.jpeg'
+    image: '/images/products/125.jpeg'
   },
   {
     id: 126,
@@ -217,7 +217,7 @@ export const PRODUCTS: Product[] = [
     price: 42000,
     category: Category.LUBRICANTES,
     description: 'Aceite Motorcraft 10W30 Semi-Sintético. Presentación: Cuarto de galón.',
-    image: '/images/products/124.jpeg'
+    image: '/images/products/126.jpeg'
   },
 
   // ============================================================
@@ -229,7 +229,7 @@ export const PRODUCTS: Product[] = [
     price: 1025000,
     category: Category.FILTROS,
     description: 'Pack de filtros originales Ford para Ranger 2022-2024. Incluye: EB3Z-9365B, JU2Z-6731A, MG2MZ9601B, HB3Z19N619B + 10 cuartos Motorcraft 10W30.',
-    image: '/images/products/111.jpeg'
+    image: '/images/products/108.jpeg'
   },
   {
     id: 127,
@@ -237,7 +237,7 @@ export const PRODUCTS: Product[] = [
     price: 300000,
     category: Category.FILTROS,
     description: 'Filtro de combustible original Ford EB3Z-9365B para Ranger 2022-2024.',
-    image: '/images/products/102.png'
+    image: '/images/products/127.jpeg'
   },
   {
     id: 128,
@@ -245,7 +245,7 @@ export const PRODUCTS: Product[] = [
     price: 185000,
     category: Category.FILTROS,
     description: 'Filtro de aire motor original Ford MG2MZ9601B para Ranger 2022-2024.',
-    image: '/images/products/115.jpeg'
+    image: '/images/products/128.jpeg'
   },
   {
     id: 129,
@@ -253,7 +253,7 @@ export const PRODUCTS: Product[] = [
     price: 60000,
     category: Category.FILTROS,
     description: 'Filtro de aceite original Ford JU2Z-6731A para Ranger 2022-2024.',
-    image: '/images/products/116.jpeg'
+    image: '/images/products/129.jpeg'
   },
   {
     id: 130,
@@ -261,7 +261,7 @@ export const PRODUCTS: Product[] = [
     price: 60000,
     category: Category.FILTROS,
     description: 'Filtro de aire acondicionado original Ford HB3Z19N619B para Ranger 2022-2024.',
-    image: '/images/products/104.png'
+    image: '/images/products/130.jpeg'
   },
 
   // ============================================================
@@ -273,7 +273,7 @@ export const PRODUCTS: Product[] = [
     price: 1420000,
     category: Category.FILTROS,
     description: 'Pack de filtros originales Ford para Ranger 2025-2026. Incluye: KV61-9155AG, JU2Z-6731A, MB3Z-9601C, MB3Z19N619C + 8 cuartos Motorcraft 5W30.',
-    image: '/images/products/118.png'
+    image: '/images/products/109.jpeg'
   },
   {
     id: 131,
@@ -281,7 +281,7 @@ export const PRODUCTS: Product[] = [
     price: 600000,
     category: Category.FILTROS,
     description: 'Filtro de combustible original Ford KV61-9155AG para Ranger 2025-2026.',
-    image: '/images/products/120.jpeg'
+    image: '/images/products/131.jpeg'
   },
   {
     id: 132,
@@ -289,7 +289,7 @@ export const PRODUCTS: Product[] = [
     price: 210000,
     category: Category.FILTROS,
     description: 'Filtro de aire motor original Ford MB3Z-9601C para Ranger 2025-2026.',
-    image: '/images/products/106.jpeg'
+    image: '/images/products/132.jpeg'
   },
   {
     id: 133,
@@ -297,7 +297,7 @@ export const PRODUCTS: Product[] = [
     price: 110000,
     category: Category.FILTROS,
     description: 'Filtro de aire acondicionado original Ford MB3Z19N619C para Ranger 2025-2026.',
-    image: '/images/products/107.jpeg'
+    image: '/images/products/133.jpeg'
   },
   {
     id: 110,
