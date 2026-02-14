@@ -49,7 +49,7 @@ export const PRODUCTS: Product[] = [
     price: 15000,
     category: Category.FILTROS,
     description: 'Filtro de aceite para Toyota Revo.',
-    image: '/images/products/113.jpeg'
+    image: '/images/products/113.png'
   },
   {
     id: 114,
@@ -57,7 +57,7 @@ export const PRODUCTS: Product[] = [
     price: 45000,
     category: Category.FILTROS,
     description: 'Filtro de combustible para Toyota Revo.',
-    image: '/images/products/114.jpeg'
+    image: '/images/products/114.png'
   },
   {
     id: 102,
@@ -65,7 +65,7 @@ export const PRODUCTS: Product[] = [
     price: 125000,
     category: Category.LUBRICANTES,
     description: 'Aceite Mobil Delvac MX 15W-40 para motores diesel. Presentación: Galón.',
-    image: '/images/products/102.jpeg'
+    image: '/images/products/102.png'
   },
 
   // ============================================================
@@ -77,7 +77,7 @@ export const PRODUCTS: Product[] = [
     price: 385000,
     category: Category.FILTROS,
     description: 'Pack completo de filtros para Toyota Vigo. Incluye: AIP 651, ACP 071, OLP 067, FLP 355 + 2 galones Mobil Delvac 15W40.',
-    image: '/images/products/103.jpeg'
+    image: '/images/products/103.png'
   },
   {
     id: 115,
@@ -85,7 +85,7 @@ export const PRODUCTS: Product[] = [
     price: 50000,
     category: Category.FILTROS,
     description: 'Filtro de aire motor para Toyota Vigo.',
-    image: '/images/products/115.jpeg'
+    image: '/images/products/115.png'
   },
   {
     id: 116,
@@ -93,7 +93,7 @@ export const PRODUCTS: Product[] = [
     price: 35000,
     category: Category.FILTROS,
     description: 'Filtro de aire acondicionado para Toyota Vigo.',
-    image: '/images/products/116.jpeg'
+    image: '/images/products/116.png'
   },
   {
     id: 117,
@@ -101,7 +101,7 @@ export const PRODUCTS: Product[] = [
     price: 35000,
     category: Category.FILTROS,
     description: 'Filtro de combustible para Toyota Vigo.',
-    image: '/images/products/117.jpeg'
+    image: '/images/products/117.png'
   },
 
   // ============================================================
@@ -129,7 +129,7 @@ export const PRODUCTS: Product[] = [
     price: 35000,
     category: Category.FILTROS,
     description: 'Filtro de aire acondicionado para Nissan NP 300.',
-    image: '/images/products/119.jpeg'
+    image: '/images/products/119.png'
   },
   {
     id: 120,
@@ -153,7 +153,7 @@ export const PRODUCTS: Product[] = [
     price: 45000,
     category: Category.LUBRICANTES,
     description: 'Aceite lubricante Mobil 10W30. Presentación: Cuarto de galón.',
-    image: '/images/products/121.jpeg'
+    image: '/images/products/121.png'
   },
 
   // ============================================================
@@ -193,7 +193,7 @@ export const PRODUCTS: Product[] = [
     price: 655000,
     category: Category.FILTROS,
     description: 'Pack de filtros nacionales para Ford Ranger. Incluye: AIP 892, OLP 115, ACP 120, FLP 509 + 10 cuartos Motorcraft 10W30.',
-    image: '/images/products/107.jpeg'
+    image: '/images/products/107.png'
   },
   {
     id: 124,
@@ -209,7 +209,7 @@ export const PRODUCTS: Product[] = [
     price: 100000,
     category: Category.FILTROS,
     description: 'Filtro de combustible para Ford Ranger.',
-    image: '/images/products/125.jpeg'
+    image: '/images/products/125.png'
   },
   {
     id: 126,
@@ -217,7 +217,7 @@ export const PRODUCTS: Product[] = [
     price: 42000,
     category: Category.LUBRICANTES,
     description: 'Aceite Motorcraft 10W30 Semi-Sintético. Presentación: Cuarto de galón.',
-    image: '/images/products/126.jpeg'
+    image: '/images/products/126.png'
   },
 
   // ============================================================
@@ -229,7 +229,7 @@ export const PRODUCTS: Product[] = [
     price: 1025000,
     category: Category.FILTROS,
     description: 'Pack de filtros originales Ford para Ranger 2022-2024. Incluye: EB3Z-9365B, JU2Z-6731A, MG2MZ9601B, HB3Z19N619B + 10 cuartos Motorcraft 10W30.',
-    image: '/images/products/108.jpeg'
+    image: '/images/products/108.png'
   },
   {
     id: 127,
@@ -237,7 +237,7 @@ export const PRODUCTS: Product[] = [
     price: 300000,
     category: Category.FILTROS,
     description: 'Filtro de combustible original Ford EB3Z-9365B para Ranger 2022-2024.',
-    image: '/images/products/127.jpeg'
+    image: '/images/products/127.png'
   },
   {
     id: 128,
@@ -245,7 +245,7 @@ export const PRODUCTS: Product[] = [
     price: 185000,
     category: Category.FILTROS,
     description: 'Filtro de aire motor original Ford MG2MZ9601B para Ranger 2022-2024.',
-    image: '/images/products/128.jpeg'
+    image: '/images/products/128.png'
   },
   {
     id: 129,
@@ -253,7 +253,7 @@ export const PRODUCTS: Product[] = [
     price: 60000,
     category: Category.FILTROS,
     description: 'Filtro de aceite original Ford JU2Z-6731A para Ranger 2022-2024.',
-    image: '/images/products/129.jpeg'
+    image: '/images/products/129.png'
   },
   {
     id: 130,
@@ -261,7 +261,7 @@ export const PRODUCTS: Product[] = [
     price: 60000,
     category: Category.FILTROS,
     description: 'Filtro de aire acondicionado original Ford HB3Z19N619B para Ranger 2022-2024.',
-    image: '/images/products/130.jpeg'
+    image: '/images/products/130.png'
   },
 
   // ============================================================
@@ -273,7 +273,7 @@ export const PRODUCTS: Product[] = [
     price: 1420000,
     category: Category.FILTROS,
     description: 'Pack de filtros originales Ford para Ranger 2025-2026. Incluye: KV61-9155AG, JU2Z-6731A, MB3Z-9601C, MB3Z19N619C + 8 cuartos Motorcraft 5W30.',
-    image: '/images/products/109.jpeg'
+    image: '/images/products/109.png'
   },
   {
     id: 131,
@@ -281,7 +281,7 @@ export const PRODUCTS: Product[] = [
     price: 600000,
     category: Category.FILTROS,
     description: 'Filtro de combustible original Ford KV61-9155AG para Ranger 2025-2026.',
-    image: '/images/products/131.jpeg'
+    image: '/images/products/131.png'
   },
   {
     id: 132,
@@ -289,7 +289,7 @@ export const PRODUCTS: Product[] = [
     price: 210000,
     category: Category.FILTROS,
     description: 'Filtro de aire motor original Ford MB3Z-9601C para Ranger 2025-2026.',
-    image: '/images/products/132.jpeg'
+    image: '/images/products/132.png'
   },
   {
     id: 133,
