@@ -324,21 +324,31 @@ export const generateWompiPaymentLink = (transactionData: WompiTransactionData):
     const baseUrl = 'https://checkout.wompi.co/p/';
 
     // VALIDACIÓN DE LLAVE PÚBLICA
-    // Si la llave viene vacía, undefined o es un placeholder, usar la llave de sandbox conocida
     let finalPublicKey = transactionData.publicKey;
-    if (!finalPublicKey || finalPublicKey === 'undefined' || finalPublicKey === '') {
+    if (!finalPublicKey || finalPublicKey === 'undefined' || finalPublicKey.trim() === '') {
         console.warn('⚠️ Wompi Public Key faltante. Usando llave de Sandbox por defecto.');
         finalPublicKey = 'pub_test_Q5yDA9zoKstU483bcEn0LQvloKuNUR9z';
     }
 
-    const params = new URLSearchParams({
+    // SANITIZACIÓN DE DATOS (Evitar "undefined" en la URL)
+    const rawParams = {
         'public-key': finalPublicKey,
-        currency: transactionData.currency,
-        'amount-in-cents': transactionData.amountInCents.toString(),
-        reference: transactionData.reference
+        currency: transactionData.currency || 'COP',
+        'amount-in-cents': (transactionData.amountInCents || 0).toString(),
+        reference: transactionData.reference || `FYL-FALLBACK-${Date.now()}`,
+        'redirect-url': transactionData.redirectUrl || window.location.origin
+    };
+
+    const params = new URLSearchParams();
+
+    // Solo agregar parámetros que tengan valor real
+    Object.entries(rawParams).forEach(([key, value]) => {
+        if (value && value !== 'undefined' && value !== 'null') {
+            params.append(key, value);
+        }
     });
 
-    // Customer Data Simplificado (Solo lo esencial para evitar bloqueos por longitud de URL)
+    // Customer Data (Opcionales pero recomendados)
     if (transactionData.customerData?.email) {
         params.append('customer-data:email', transactionData.customerData.email);
     }
@@ -348,7 +358,15 @@ export const generateWompiPaymentLink = (transactionData: WompiTransactionData):
     if (transactionData.customerData?.phoneNumber) {
         params.append('customer-data:phone-number', transactionData.customerData.phoneNumber);
     }
+    // Legal ID Type y Legal ID (Evitan que Wompi lo pregunte)
+    if (transactionData.customerData?.legalId) {
+        params.append('customer-data:legal-id', transactionData.customerData.legalId);
+    }
+    if (transactionData.customerData?.legalIdType) {
+        params.append('customer-data:legal-id-type', transactionData.customerData.legalIdType);
+    }
 
+    console.log("🔗 GENERATED WOMPI LINK:", `${baseUrl}?${params.toString()}`);
     return `${baseUrl}?${params.toString()}`;
 };
 
