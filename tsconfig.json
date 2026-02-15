@@ -11,11 +11,13 @@
     ],
     "skipLibCheck": true,
     "types": [
-      "node"
+      "node",
+      "jest"
     ],
     "moduleResolution": "bundler",
     "isolatedModules": true,
     "moduleDetection": "force",
+    "esModuleInterop": true,
     "allowJs": true,
     "jsx": "react-jsx",
     "paths": {

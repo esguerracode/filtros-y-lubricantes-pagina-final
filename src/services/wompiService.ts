@@ -206,8 +206,9 @@ export const generateReference = (): string => {
 /**
  * Convierte pesos colombianos a centavos
  */
-export const copToCents = (amount: number): number => {
-    return Math.round(amount * 100);
+export const copToCents = (amount: number | string): number => {
+    const val = typeof amount === 'string' ? parseFloat(amount) : amount;
+    return Math.round(val * 100);
 };
 
 /**

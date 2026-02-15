@@ -73,66 +73,74 @@ const Checkout: React.FC = () => {
     setErrors(newErrors);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (Object.keys(errors).length > 0) return;
     setIsSubmitting(true);
 
-    // Guardar datos de envío localmente para recuperar en success page
+    // Guardar datos de envío localmente
     localStorage.setItem('last_shipping', JSON.stringify(shippingData));
 
-    // Preparar ciudad y departamento limpios
-    const cleanCity = shippingData.ciudad.replace(/[.,]/g, '').trim();
-    const cityParts = shippingData.ciudad.split(',');
-    const department = cityParts.length > 1
-      ? cityParts[1].replace(/[.,]/g, '').trim()
-      : cleanCity;
+    try {
+      // 1. SECURE ORDER CREATION (Proxy)
+      // We do NOT trust frontend prices. We send ID + Qty, backend verifies.
+      const response = await fetch('/api/orders/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: cart.map(item => ({ id: item.id, quantity: item.quantity })),
+          customer: {
+            fullName: shippingData.nombre,
+            email: shippingData.email,
+            phoneNumber: shippingData.telefono.replace(/\D/g, ''),
+            address: shippingData.direccion,
+            city: shippingData.ciudad,
+            department: shippingData.ciudad.split(',')[1]?.trim() || shippingData.ciudad // Fallback
+          }
+        })
+      });
 
-    // FLUJO WOMPI
-    const customerData: WompiCustomer = {
-      email: shippingData.email,
-      fullName: shippingData.nombre,
-      phoneNumber: shippingData.telefono.replace(/\D/g, ''),
-      phoneNumberPrefix: '+57'
-    };
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Error creating order');
+      }
 
-    const shippingAddress: WompiShippingAddress = {
-      address: shippingData.direccion,
-      city: cleanCity,
-      department: department,
-      country: 'CO'
-    };
+      const { id: orderId, total: verifiedTotal, currency } = await response.json();
 
-    const transactionData = prepareWompiTransaction(
-      cart,
-      totalPrice,
-      customerData,
-      shippingAddress
-    );
+      console.log(`✅ Order Created: ${orderId} | Total: ${verifiedTotal}`);
 
-    localStorage.setItem('last_order_ref', transactionData.reference);
+      // 2. PREPARE WOMPI (With Verified Data)
+      const wompiRef = `WC-${orderId}`; // STRICT REFERENCE FORMAT
 
-    // USAR REDIRECCIÓN DIRECTA (Nuclear Option para confiabilidad absoluta)
-    import('../services/wompiService').then(wompi => {
-      console.log('🚀 Iniciando redirección a Wompi...');
+      const transactionData = {
+        amountInCents: Math.round(verifiedTotal * 100), // Server total
+        currency: currency || 'COP',
+        customerEmail: shippingData.email,
+        reference: wompiRef,
+        publicKey: import.meta.env.VITE_WOMPI_PUBLIC_KEY,
+        redirectUrl: `${window.location.origin}/success`,
+        customerData: {
+          email: shippingData.email,
+          fullName: shippingData.nombre,
+          phoneNumber: shippingData.telefono.replace(/\D/g, ''),
+          phoneNumberPrefix: '+57'
+        }
+      };
 
-      // Asegurar que la referencia es única
-      transactionData.redirectUrl = window.location.origin + '/success'; // Forzar redirect explícito
+      // 3. GENERATE & REDIRECT
+      import('../services/wompiService').then(wompi => {
+        const link = wompi.generateWompiPaymentLink(transactionData);
+        console.log('🔗 Redirecting to Wompi:', link);
+        // Simulate "UX Delay" so user sees the secure lock icon/spinner if we add one? 
+        // No, fast is better.
+        window.location.href = link;
+      });
 
-      // Generar link y redirigir
-      const paymentLink = wompi.generateWompiPaymentLink(transactionData);
-      console.log('🔗 Link generado:', paymentLink);
-
-      // DEBUG: Mostrar alerta si estamos en dev o si hay error previo
-      // alert(`Redirigiendo a Wompi: ${paymentLink}`); 
-
-      window.location.href = paymentLink;
-
-    }).catch(err => {
-      console.error('Error generando link Wompi:', err);
-      alert('Error crítico al conectar con Wompi. Verifica tu conexión.');
+    } catch (error: any) {
+      console.error('Checkout Error:', error);
+      alert(`Error iniciando pago: ${error.message}`);
       setIsSubmitting(false);
-    });
+    }
   };
 
   const subtotal = Math.round(totalPrice / 1.19);
@@ -359,7 +367,12 @@ const Checkout: React.FC = () => {
                 disabled={Object.keys(errors).length > 0 || isSubmitting}
                 className="hidden md:flex w-full bg-[#d4e157] text-[#054a29] py-6 rounded-2xl font-black text-xl items-center justify-center gap-3 hover:bg-[#054a29] hover:text-white transition-all active:scale-95 shadow-xl uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed group"
               >
-                {isSubmitting ? 'Procesando Pago...' : (
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Conectando con Bancolombia...
+                  </span>
+                ) : (
                   <>Pagar con Wompi <Send size={24} className="group-hover:translate-x-1 transition-transform" /></>
                 )}
               </button>

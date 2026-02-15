@@ -1,0 +1,88 @@
+import { corsHeaders, handleOptions, validateOrigin } from '../_utils/cors';
+import { getProduct, createOrder } from '../_utils/woo';
+
+export default async function handler(req: any, res: any) {
+    if (req.method === 'OPTIONS') {
+        return res.status(204).headers(corsHeaders).send();
+    }
+
+    // Strict Origin Check
+    if (!validateOrigin(req)) {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    if (req.method !== 'POST') {
+        return res.status(405).send('Method Not Allowed');
+    }
+
+    try {
+        const { items, customer } = req.body;
+
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({ error: 'Invalid items' });
+        }
+
+        // 1. Validate Prices & Calculate Total Server-Side
+        let calculatedTotal = 0;
+        const lineItems = [];
+
+        for (const item of items) {
+            const product = await getProduct(item.id);
+
+            if (!product) {
+                return res.status(404).json({ error: `Product ${item.id} not found` });
+            }
+
+            const price = parseFloat(product.price);
+            const qty = item.quantity;
+
+            calculatedTotal += price * qty;
+
+            lineItems.push({
+                product_id: item.id,
+                quantity: qty
+            });
+        }
+
+        // 2. Create Order in WooCommerce
+        const orderData = {
+            payment_method: 'wompi',
+            payment_method_title: 'Wompi',
+            set_paid: false,
+            status: 'pending',
+            billing: {
+                first_name: customer.fullName,
+                email: customer.email,
+                phone: customer.phoneNumber,
+                address_1: customer.address,
+                city: customer.city,
+                state: customer.department,
+                country: 'CO'
+            },
+            shipping: {
+                first_name: customer.fullName,
+                address_1: customer.address,
+                city: customer.city,
+                state: customer.department,
+                country: 'CO'
+            },
+            line_items: lineItems,
+            meta_data: [
+                { key: '_is_wompi_pending', value: 'yes' }
+            ]
+        };
+
+        const order = await createOrder(orderData);
+
+        return res.status(200).json({
+            id: order.id,
+            total: order.total,
+            currency: order.currency,
+            key: order.order_key
+        });
+
+    } catch (error: any) {
+        console.error('Order Creation Error:', error);
+        return res.status(500).json({ error: error.message });
+    }
+}
