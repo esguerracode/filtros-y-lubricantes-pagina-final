@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 30">
+  <circle cx="15" cy="15" r="12" fill="#007bff"/>
+  <text x="15" y="20" font-family="Arial, sans-serif" font-size="10" fill="white" text-anchor="middle" font-weight="bold">PSE</text>
+  <text x="35" y="22" font-family="Arial, sans-serif" font-size="18" fill="#003366" font-weight="bold">PSE</text>
+</svg>

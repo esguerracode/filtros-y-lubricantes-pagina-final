@@ -14,7 +14,7 @@ export interface Product {
   categories?: any[];
 }
 
-const CACHE_KEY = 'wc_products_cache_v5';
+const CACHE_KEY = 'wc_products_cache_v7';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
 
 // Mapeo manual de priorización para asegurar que las fotos reales se vean
@@ -179,7 +179,14 @@ export const useProducts = () => {
       } catch (err: any) {
         clearTimeout(timeoutId);
         console.warn('⚠️ WooCommerce no disponible o error, usando datos locales');
-        setProducts(PRODUCTS);
+
+        // CORRECCIÓN CRÍTICA: Asegurar que los productos locales tengan sus imágenes sincronizadas
+        const productsWithFixedImages = PRODUCTS.map(p => ({
+          ...p,
+          image: getLocalImageFallback(p.name) || p.image
+        }));
+
+        setProducts(productsWithFixedImages);
         setError('Mostrando catálogo local');
         setLoading(false);
       }

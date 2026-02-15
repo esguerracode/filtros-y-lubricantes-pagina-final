@@ -19,7 +19,8 @@ interface WompiConfig {
 }
 
 const WOMPI_CONFIG: WompiConfig = {
-    publicKey: import.meta.env.VITE_WOMPI_PUBLIC_KEY || '',
+    // FALLBACK DE EMERGENCIA: Si la variable de entorno falla, usar la llave de sandbox directamente
+    publicKey: import.meta.env.VITE_WOMPI_PUBLIC_KEY || 'pub_test_Q5yDA9zoKstU483bcEn0LQvloKuNUR9z',
     privateKey: import.meta.env.VITE_WOMPI_PRIVATE_KEY || '',
     isTest: import.meta.env.VITE_WOMPI_TEST === 'true',
     currency: 'COP',
@@ -111,9 +112,13 @@ class WompiClient {
     private privateKey: string;
 
     constructor(publicKey: string, privateKey: string, baseURL: string) {
-        this.publicKey = publicKey;
-        this.privateKey = privateKey;
+        this.publicKey = publicKey || '';
+        this.privateKey = privateKey || '';
         this.baseURL = baseURL;
+
+        if (!this.publicKey) {
+            console.error('❌ Wompi Error: La llave pública es indefinida. Revisa tu archivo .env.local');
+        }
     }
 
     /**
@@ -247,19 +252,28 @@ export const openWompiWidget = (transactionData: WompiTransactionData) => {
         if ((window as any).WidgetCheckout) {
             clearInterval(checkWidget);
 
-            // CONFIGURACIÓN OFICIAL SEGÚN DOCS DE WOMPI
+            // CONFIGURACIÓN OFICIAL SEGÚN DOCS DE WOMPI (v1.0.0)
             // https://docs.wompi.co/docs/colombia/widget-checkout/
             const widgetConfig: any = {
                 currency: transactionData.currency,
                 amountInCents: transactionData.amountInCents,
                 reference: transactionData.reference,
-                publicKey: transactionData.publicKey
+                publicKey: transactionData.publicKey,
+                redirectUrl: transactionData.redirectUrl, // Explicitly pass redirectUrl
+                customerData: {
+                    email: transactionData.customerData?.email,
+                    fullName: transactionData.customerData?.fullName,
+                    phoneNumber: transactionData.customerData?.phoneNumber,
+                    phoneNumberPrefix: transactionData.customerData?.phoneNumberPrefix
+                },
+                shippingAddress: {
+                    addressLine1: transactionData.shippingAddress?.address,
+                    city: transactionData.shippingAddress?.city,
+                    region: transactionData.shippingAddress?.department,
+                    country: transactionData.shippingAddress?.country,
+                    phoneNumber: transactionData.customerData?.phoneNumber
+                }
             };
-
-            // redirectUrl es opcional pero recomendado
-            if (transactionData.redirectUrl) {
-                widgetConfig.redirectUrl = transactionData.redirectUrl;
-            }
 
             console.log('🔹 Wompi Widget Config:', JSON.stringify(widgetConfig, null, 2));
 
@@ -269,7 +283,7 @@ export const openWompiWidget = (transactionData: WompiTransactionData) => {
             // Abrir widget con callback
             checkout.open((result: any) => {
                 if (!result || !result.transaction) {
-                    console.error('❌ No transaction data received from Wompi');
+                    console.warn('⚠️ No transaction data or widget closed. Checking for fallback...');
                     return;
                 }
 
@@ -282,21 +296,23 @@ export const openWompiWidget = (transactionData: WompiTransactionData) => {
                     window.location.href = `${redirectUrl}?status=approved&reference=${transaction.reference}&id=${transaction.id}`;
                 } else if (transaction.status === 'DECLINED') {
                     window.location.href = `${redirectUrl}?status=declined&reference=${transaction.reference}`;
-                } else {
+                } else if (transaction.status === 'PENDING') {
                     window.location.href = `${redirectUrl}?status=pending&reference=${transaction.reference}`;
                 }
             });
         }
     }, 100);  // Revisar cada 100ms
 
-    // Timeout de seguridad (10 segundos)
+    // Timeout de seguridad (5 segundos para el widget)
+    // Si falla, disparamos el REDIRECT LINK (Fallback 403 Safety)
     setTimeout(() => {
         clearInterval(checkWidget);
         if (!(window as any).WidgetCheckout) {
-            alert('Error cargando pasarela de pago. Por favor recarga la página e intenta nuevamente.');
-            console.error('❌ Wompi widget failed to load after 10 seconds');
+            console.warn('🚨 Wompi Widget failed to load. Triggering RESILIENCE REDIRECT...');
+            const fallbackLink = generateWompiPaymentLink(transactionData);
+            window.location.href = fallbackLink;
         }
-    }, 10000);
+    }, 5000);
 };
 
 /**
@@ -304,7 +320,8 @@ export const openWompiWidget = (transactionData: WompiTransactionData) => {
  * El cliente será redirigido a la página de checkout de Wompi
  */
 export const generateWompiPaymentLink = (transactionData: WompiTransactionData): string => {
-    const baseUrl = 'https://checkout.wompi.co/l';
+    // CORRECCIÓN CRÍTICA: Usar endpoint /p/ (WebCheckout) en lugar de /l (Links pre-creados)
+    const baseUrl = 'https://checkout.wompi.co/p/';
 
     const params = new URLSearchParams({
         'public-key': transactionData.publicKey,
@@ -313,48 +330,15 @@ export const generateWompiPaymentLink = (transactionData: WompiTransactionData):
         reference: transactionData.reference
     });
 
-    // Redirect URL
-    if (transactionData.redirectUrl) {
-        params.append('redirect-url', transactionData.redirectUrl);
+    // Customer Data Simplificado (Solo lo esencial para evitar bloqueos por longitud de URL)
+    if (transactionData.customerData?.email) {
+        params.append('customer-data:email', transactionData.customerData.email);
     }
-
-    // Customer Data
-    if (transactionData.customerData) {
-        if (transactionData.customerData.email) {
-            params.append('customer-data:email', transactionData.customerData.email);
-        }
-        if (transactionData.customerData.fullName) {
-            params.append('customer-data:full-name', transactionData.customerData.fullName);
-        }
-        if (transactionData.customerData.phoneNumber && transactionData.customerData.phoneNumberPrefix) {
-            params.append('customer-data:phone-number', transactionData.customerData.phoneNumber);
-            params.append('customer-data:phone-number-prefix', transactionData.customerData.phoneNumberPrefix);
-        }
-        if (transactionData.customerData.legalId) {
-            params.append('customer-data:legal-id', transactionData.customerData.legalId);
-        }
-        if (transactionData.customerData.legalIdType) {
-            params.append('customer-data:legal-id-type', transactionData.customerData.legalIdType);
-        }
+    if (transactionData.customerData?.fullName) {
+        params.append('customer-data:full-name', transactionData.customerData.fullName);
     }
-
-    // Shipping Address
-    if (transactionData.shippingAddress) {
-        if (transactionData.shippingAddress.address) {
-            params.append('shipping-address:address-line-1', transactionData.shippingAddress.address);
-        }
-        if (transactionData.shippingAddress.city) {
-            params.append('shipping-address:city', transactionData.shippingAddress.city);
-        }
-        if (transactionData.shippingAddress.department) {
-            params.append('shipping-address:region', transactionData.shippingAddress.department);
-        }
-        if (transactionData.shippingAddress.country) {
-            params.append('shipping-address:country', transactionData.shippingAddress.country);
-        }
-        if (transactionData.shippingAddress.postalCode) {
-            params.append('shipping-address:postal-code', transactionData.shippingAddress.postalCode);
-        }
+    if (transactionData.customerData?.phoneNumber) {
+        params.append('customer-data:phone-number', transactionData.customerData.phoneNumber);
     }
 
     return `${baseUrl}?${params.toString()}`;

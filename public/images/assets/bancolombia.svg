@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 30">
+  <rect width="30" height="30" fill="#FDDA24"/>
+  <rect width="10" height="30" x="20" fill="#000"/>
+  <rect width="10" height="30" x="10" fill="#FFF"/>
+  <text x="45" y="22" font-family="Arial, sans-serif" font-size="18" fill="black" font-weight="bold">Bancolombia</text>
+</svg>
