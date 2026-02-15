@@ -114,6 +114,9 @@ const Checkout: React.FC = () => {
       const paymentLink = wompi.generateWompiPaymentLink(transactionData);
       console.log('🔗 Link generado:', paymentLink);
 
+      // DEBUG: Mostrar alerta si estamos en dev o si hay error previo
+      // alert(`Redirigiendo a Wompi: ${paymentLink}`); 
+
       window.location.href = paymentLink;
 
     }).catch(err => {

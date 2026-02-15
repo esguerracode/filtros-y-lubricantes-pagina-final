@@ -323,8 +323,16 @@ export const generateWompiPaymentLink = (transactionData: WompiTransactionData):
     // CORRECCIÓN CRÍTICA: Usar endpoint /p/ (WebCheckout) en lugar de /l (Links pre-creados)
     const baseUrl = 'https://checkout.wompi.co/p/';
 
+    // VALIDACIÓN DE LLAVE PÚBLICA
+    // Si la llave viene vacía, undefined o es un placeholder, usar la llave de sandbox conocida
+    let finalPublicKey = transactionData.publicKey;
+    if (!finalPublicKey || finalPublicKey === 'undefined' || finalPublicKey === '') {
+        console.warn('⚠️ Wompi Public Key faltante. Usando llave de Sandbox por defecto.');
+        finalPublicKey = 'pub_test_Q5yDA9zoKstU483bcEn0LQvloKuNUR9z';
+    }
+
     const params = new URLSearchParams({
-        'public-key': transactionData.publicKey,
+        'public-key': finalPublicKey,
         currency: transactionData.currency,
         'amount-in-cents': transactionData.amountInCents.toString(),
         reference: transactionData.reference
