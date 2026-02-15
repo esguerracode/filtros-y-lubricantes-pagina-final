@@ -5,9 +5,18 @@ import { useCart } from '../components/CartContext';
 import { ArrowLeft, Send, MapPin, User, Phone, Check, ShieldCheck, Lock, AlertCircle, Truck, Sparkles } from 'lucide-react';
 import { generateWompiPaymentLink, prepareWompiTransaction } from '../services/wompiService';
 import type { WompiCustomer, WompiShippingAddress } from '../services/wompiService';
+import { trackInitiateCheckout } from '../utils/analytics';
 
 const Checkout: React.FC = () => {
   const { cart, totalPrice, totalItems } = useCart();
+
+  // Analytics: InitiateCheckout
+  useEffect(() => {
+    if (cart.length > 0) {
+      trackInitiateCheckout(cart, totalPrice);
+    }
+  }, []); // Run once on mount
+
   const navigate = useNavigate();
 
   const [isSubmitting, setIsSubmitting] = useState(false);

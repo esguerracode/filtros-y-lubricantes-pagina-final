@@ -2,6 +2,13 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
+import { PIXEL_ID } from './utils/analytics';
+
+// Initialize Pixel
+if (window.fbq) {
+  window.fbq('init', PIXEL_ID || '123456789');
+  window.fbq('track', 'PageView');
+}
 
 // GLOBAL ERROR HANDLER (Prevent White Screen of Death)
 window.onerror = function (message, source, lineno, colno, error) {

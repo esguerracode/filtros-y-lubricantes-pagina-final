@@ -61,7 +61,7 @@ const Footer: React.FC = () => {
 
         <div className="pt-12 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-white/30 font-medium uppercase tracking-widest">
           <p>&copy; {new Date().getFullYear()} Filtros y Lubricantes del Llano S.A.S</p>
-          <p>Hecho para Puerto Gaitán • Meta <span className="block md:inline md:ml-2 opacity-50 font-mono text-[10px]">v2.3 (NanoBanano Update)</span></p>
+          <p>Hecho para Puerto Gaitán • Meta <span className="block md:inline md:ml-2 opacity-50 font-mono text-[10px]">v2.4 (Fix Confirmado)</span></p>
         </div>
       </div>
     </footer>

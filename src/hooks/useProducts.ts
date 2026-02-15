@@ -14,7 +14,7 @@ export interface Product {
   categories?: any[];
 }
 
-const CACHE_KEY = 'wc_products_cache_v8';
+const CACHE_KEY = 'wc_products_cache_v9';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
 
 // Mapeo manual de priorización para asegurar que las fotos reales se vean
@@ -30,6 +30,7 @@ const LOCAL_IMAGE_OVERRIDE: Record<string, string> = {
 
   // MOBIL DELVAC
   'Mobil Delvac 15W40 Galón': '/images/products/mobil_delvac_15w40_gallon_1771121799090.png',
+  'Aceite Mobil 10W30 (1/4 Galón)': '/images/products/121.png',
 
   // TOYOTA VIGO (Usando imágenes de Revo/Genéricas compatibles visualmente por ahora si no hay específicas de Vigo)
   'KIT TOYOTA VIGO (Pack Completo)': '/images/products/kit_toyota_revo_pack_completo_1771121609322.png',

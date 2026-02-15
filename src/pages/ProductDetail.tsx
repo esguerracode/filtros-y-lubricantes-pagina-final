@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { CONTACT_INFO } from '../constants';
 import { useProducts } from '../hooks/useProducts';
 import { useCart } from '../components/CartContext';
+import { trackViewContent } from '../utils/analytics';
 import { ArrowLeft, ArrowRight, ShoppingCart, MessageCircle, Check, ShieldCheck, Star, AlertCircle, TrendingUp, Clock, Zap, Target, Package } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import AddToCartToast from '../components/AddToCartToast';
@@ -18,6 +18,18 @@ const ProductDetail: React.FC = () => {
   const [showSticky, setShowSticky] = useState(false);
 
   const product = products.find(p => p.id === Number(id));
+
+  // Analytics: ViewContent
+  useEffect(() => {
+    if (product) {
+      trackViewContent({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        type: product.category
+      });
+    }
+  }, [product]);
   const relatedProducts = products.filter(p => p.category === product?.category && p.id !== product?.id).slice(0, 4);
 
   // Timer logic for "Regional Dispatch" urgency

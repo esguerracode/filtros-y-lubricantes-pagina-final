@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Product } from '../types';
+import { trackAddToCart } from '../utils/analytics';
 
 
 interface CartItem extends Product {
@@ -34,6 +35,8 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [cart]);
 
   const addToCart = (product: Product, quantity: number = 1) => {
+    trackAddToCart({ ...product, quantity }); // Analytics Event
+
     setCart(prevCart => {
       const existing = prevCart.find(item => item.id === product.id);
       if (existing) {

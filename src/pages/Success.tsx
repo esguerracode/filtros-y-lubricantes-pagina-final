@@ -4,6 +4,7 @@ import { useCart } from '../components/CartContext';
 import { CONTACT_INFO } from '../constants';
 import { CheckCircle, MessageCircle, Home, Download, Mail, Package, XCircle, Clock } from 'lucide-react';
 import { downloadInvoice, type InvoiceData } from '../services/invoiceService';
+import { trackPurchase } from '../utils/analytics';
 
 const BANK_ACCOUNTS = [
   { bank: 'Banco de Bogotá', type: 'Cuenta Corriente', number: '804-185-643' },
@@ -82,9 +83,17 @@ ${isWompiPayment ? '_Pago confirmado por Wompi_' : '_Solicito información para 
     window.open(whatsappUrl, '_blank');
   };
 
+
+
+  // ... existing code ...
+
   useEffect(() => {
     if (cart.length === 0 && !orderRef) {
       navigate('/');
+    } else if (orderRef && cart.length > 0) {
+      // Analytics: Purchase
+      // Only fire if we have items (valid purchase session)
+      trackPurchase(orderRef, totalPrice, 'COP');
     }
   }, []);
 
