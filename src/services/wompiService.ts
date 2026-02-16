@@ -74,6 +74,7 @@ export interface WompiTransactionData {
     taxInCents?: number;
     customerData?: WompiCustomer;
     shippingAddress?: WompiShippingAddress;
+    integritySignature?: string; // SHA256(ref + amount + currency + secret)
 }
 
 export interface WompiAcceptanceToken {
@@ -337,7 +338,8 @@ export const generateWompiPaymentLink = (transactionData: WompiTransactionData):
         currency: transactionData.currency || 'COP',
         'amount-in-cents': (transactionData.amountInCents || 0).toString(),
         reference: transactionData.reference || `FYL-FALLBACK-${Date.now()}`,
-        'redirect-url': transactionData.redirectUrl || window.location.origin
+        'redirect-url': transactionData.redirectUrl || window.location.origin,
+        'signature': transactionData.integritySignature || '' // Parameter name is 'signature' for links
     };
 
     const params = new URLSearchParams();

@@ -1,5 +1,6 @@
 import { corsHeaders, handleOptions, validateOrigin } from '../_utils/cors';
 import { getProduct, createOrder } from '../_utils/woo';
+import { generateIntegritySignature, copToCents } from '../_utils/wompi';
 
 export default async function handler(req: any, res: any) {
     if (req.method === 'OPTIONS') {
@@ -74,11 +75,19 @@ export default async function handler(req: any, res: any) {
 
         const order = await createOrder(orderData);
 
+        // 3. Generate Wompi Integrity Signature
+        const amountInCents = copToCents(order.total);
+        const currency = order.currency || 'COP';
+        const wompiReference = `WC-${order.id}`;
+
+        const signature = generateIntegritySignature(wompiReference, amountInCents, currency);
+
         return res.status(200).json({
             id: order.id,
             total: order.total,
-            currency: order.currency,
-            key: order.order_key
+            currency: currency,
+            key: order.order_key,
+            signature // Return to frontend
         });
 
     } catch (error: any) {

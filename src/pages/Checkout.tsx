@@ -105,20 +105,30 @@ const Checkout: React.FC = () => {
         throw new Error(err.error || 'Error creating order');
       }
 
-      const { id: orderId, total: verifiedTotal, currency } = await response.json();
+      const { id: orderId, total: verifiedTotal, currency, signature } = await response.json();
 
       console.log(`✅ Order Created: ${orderId} | Total: ${verifiedTotal}`);
 
       // 2. PREPARE WOMPI (With Verified Data)
       const wompiRef = `WC-${orderId}`; // STRICT REFERENCE FORMAT
 
+      // Defensive access to environment variables - PRODUCTION FALLBACK
+      const wompiPublicKey = import.meta.env?.VITE_WOMPI_PUBLIC_KEY || 'pub_prod_N3wRyFLmr5kSWrRZa4nTS07CctnJnJ2w';
+
+      if (!import.meta.env?.VITE_WOMPI_PUBLIC_KEY) {
+        console.error('⚠️ WOMPI: Variable VITE_WOMPI_PUBLIC_KEY no encontrada, usando fallback de PRODUCCIÓN');
+      }
+
+      console.log('🔐 WOMPI: Inicializando con clave:', wompiPublicKey.substring(0, 20) + '...');
+
       const transactionData = {
         amountInCents: Math.round(verifiedTotal * 100), // Server total
         currency: currency || 'COP',
         customerEmail: shippingData.email,
         reference: wompiRef,
-        publicKey: import.meta.env.VITE_WOMPI_PUBLIC_KEY,
+        publicKey: wompiPublicKey,
         redirectUrl: `${window.location.origin}/success`,
+        integritySignature: signature, // Pass the secure signature
         customerData: {
           email: shippingData.email,
           fullName: shippingData.nombre,
@@ -131,8 +141,6 @@ const Checkout: React.FC = () => {
       import('../services/wompiService').then(wompi => {
         const link = wompi.generateWompiPaymentLink(transactionData);
         console.log('🔗 Redirecting to Wompi:', link);
-        // Simulate "UX Delay" so user sees the secure lock icon/spinner if we add one? 
-        // No, fast is better.
         window.location.href = link;
       });
 

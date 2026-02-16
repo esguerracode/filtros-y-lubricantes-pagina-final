@@ -24,7 +24,7 @@
     !function (f, b, e, v, n, t, s) {
       if (f.fbq) return; n = f.fbq = function () {
         n.callMethod ?
-        n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+          n.callMethod.apply(n, arguments) : n.queue.push(arguments)
       };
       if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
       n.queue = []; t = b.createElement(e); t.async = !0;
@@ -101,8 +101,35 @@
     }
     </script>
 
-  <!-- Wompi Payment Widget (Pre-carga para evitar delay) -->
-  <script src="https://checkout.wompi.co/widget.js" async></script>
+  <!-- DNS Version Detector & Propagation Handler -->
+  <script>
+    (function () {
+      const CURRENT_VERSION = 'vercel-v2.0';
+      const storedVersion = localStorage.getItem('site_version');
+
+      if (storedVersion && storedVersion !== CURRENT_VERSION) {
+        console.warn('⚠️ Nueva versión detectada. Actualizando...');
+        localStorage.setItem('site_version', CURRENT_VERSION);
+        location.reload(true);
+      } else {
+        localStorage.setItem('site_version', CURRENT_VERSION);
+      }
+    })();
+  </script>
+  <style>
+    .dns-banner {
+      background: #fef3c7;
+      color: #92400e;
+      padding: 8px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: bold;
+      border-bottom: 1px solid #fde68a;
+      position: sticky;
+      top: 0;
+      z-index: 9999;
+    }
+  </style>
 </head>
 
 <body>

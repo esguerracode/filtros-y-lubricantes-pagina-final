@@ -21,6 +21,12 @@ function App() {
       <Router>
         <ScrollToTop />
         <div className="min-h-screen bg-white flex flex-col">
+          {/* Banner de Propagación DNS (Temporal) */}
+          {(location.search.includes('v=new') || localStorage.getItem('dns_info')) && (
+            <div className="dns-banner">
+              🔄 Estamos actualizando el sitio. Si ve información antigua, recargue la página.
+            </div>
+          )}
           <Navbar />
 
           <main className="flex-grow">
