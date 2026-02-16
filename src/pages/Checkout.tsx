@@ -1,25 +1,27 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../components/CartContext';
-import { ArrowLeft, Send, MapPin, User, Phone, Check, ShieldCheck, Lock, AlertCircle, Truck, Sparkles } from 'lucide-react';
-import { generateWompiPaymentLink, prepareWompiTransaction } from '../services/wompiService';
-import type { WompiCustomer, WompiShippingAddress } from '../services/wompiService';
+import { ArrowLeft, Send, MapPin, User, Phone, Check, ShieldCheck, Lock, AlertCircle, Truck } from 'lucide-react';
+import '../styles/checkout.css'; // Estilos para el widget inline
 import { trackInitiateCheckout } from '../utils/analytics';
 
 const Checkout: React.FC = () => {
   const { cart, totalPrice, totalItems } = useCart();
+  const navigate = useNavigate();
+  const wompiContainerRef = useRef<HTMLDivElement>(null);
+
+  // Estados para Pago Inline
+  const [showPayment, setShowPayment] = useState(false);
+  const [orderData, setOrderData] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingPayment, setIsLoadingPayment] = useState(false);
 
   // Analytics: InitiateCheckout
   useEffect(() => {
     if (cart.length > 0) {
       trackInitiateCheckout(cart, totalPrice);
     }
-  }, []); // Run once on mount
-
-  const navigate = useNavigate();
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  }, []);
 
   // State con persistencia desde localStorage
   const [shippingData, setShippingData] = useState(() => {
@@ -41,7 +43,19 @@ const Checkout: React.FC = () => {
     localStorage.setItem('checkout_draft', JSON.stringify(shippingData));
   }, [shippingData]);
 
-  if (cart.length === 0) {
+  // CONFIGURACIÓN WOMPI & LOGGING
+  const WOMPI_PUBLIC_KEY = import.meta.env?.VITE_WOMPI_PUBLIC_KEY || 'pub_prod_N3wRyFLmr5kSWrRZa4nTS07CctnJnJ2w';
+
+  useEffect(() => {
+    if (!import.meta.env?.VITE_WOMPI_PUBLIC_KEY) {
+      console.warn('⚠️ WOMPI: Variable VITE_WOMPI_PUBLIC_KEY no encontrada. Usando fallback de PRODUCCIÓN.');
+    } else {
+      console.log('✅ WOMPI: Variable cargada correctamente');
+    }
+    console.log('🔐 WOMPI: Inicializando con clave:', WOMPI_PUBLIC_KEY.substring(0, 20) + '...');
+  }, []);
+
+  if (cart.length === 0 && !showPayment) {
     navigate('/carrito');
     return null;
   }
@@ -78,12 +92,9 @@ const Checkout: React.FC = () => {
     if (Object.keys(errors).length > 0) return;
     setIsSubmitting(true);
 
-    // Guardar datos de envío localmente
     localStorage.setItem('last_shipping', JSON.stringify(shippingData));
 
     try {
-      // 1. SECURE ORDER CREATION (Proxy)
-      // We do NOT trust frontend prices. We send ID + Qty, backend verifies.
       const response = await fetch('/api/orders/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -95,7 +106,7 @@ const Checkout: React.FC = () => {
             phoneNumber: shippingData.telefono.replace(/\D/g, ''),
             address: shippingData.direccion,
             city: shippingData.ciudad,
-            department: shippingData.ciudad.split(',')[1]?.trim() || shippingData.ciudad // Fallback
+            department: shippingData.ciudad.split(',')[1]?.trim() || shippingData.ciudad
           }
         })
       });
@@ -105,59 +116,142 @@ const Checkout: React.FC = () => {
         throw new Error(err.error || 'Error creating order');
       }
 
-      const { id: orderId, total: verifiedTotal, currency, signature } = await response.json();
+      const orderResponse = await response.json();
+      console.log('📦 Orden creada:', orderResponse);
 
-      console.log(`✅ Order Created: ${orderId} | Total: ${verifiedTotal}`);
-
-      // 2. PREPARE WOMPI (With Verified Data)
-      const wompiRef = `WC-${orderId}`; // STRICT REFERENCE FORMAT
-
-      // Defensive access to environment variables - PRODUCTION FALLBACK
-      const wompiPublicKey = import.meta.env?.VITE_WOMPI_PUBLIC_KEY || 'pub_prod_N3wRyFLmr5kSWrRZa4nTS07CctnJnJ2w';
-
-      if (!import.meta.env?.VITE_WOMPI_PUBLIC_KEY) {
-        console.error('⚠️ WOMPI: Variable VITE_WOMPI_PUBLIC_KEY no encontrada, usando fallback de PRODUCCIÓN');
-      }
-
-      console.log('🔐 WOMPI: Inicializando con clave:', wompiPublicKey.substring(0, 20) + '...');
-
-      const transactionData = {
-        amountInCents: Math.round(verifiedTotal * 100), // Server total
-        currency: currency || 'COP',
-        customerEmail: shippingData.email,
-        reference: wompiRef,
-        publicKey: wompiPublicKey,
-        redirectUrl: `${window.location.origin}/success`,
-        integritySignature: signature, // Pass the secure signature
-        customerData: {
-          email: shippingData.email,
-          fullName: shippingData.nombre,
-          phoneNumber: shippingData.telefono.replace(/\D/g, ''),
-          phoneNumberPrefix: '+57'
-        }
-      };
-
-      // 3. GENERATE & REDIRECT
-      import('../services/wompiService').then(wompi => {
-        const link = wompi.generateWompiPaymentLink(transactionData);
-        console.log('🔗 Redirecting to Wompi:', link);
-        window.location.href = link;
-      });
+      setOrderData(orderResponse);
+      setShowPayment(true);
+      setIsLoadingPayment(true);
 
     } catch (error: any) {
-      console.error('Checkout Error:', error);
+      console.error('❌ Error creando orden:', error);
       alert(`Error iniciando pago: ${error.message}`);
       setIsSubmitting(false);
     }
   };
 
+  // LÓGICA DEL WIDGET INLINE DE WOMPI
+  useEffect(() => {
+    if (!showPayment || !orderData) return;
+
+    console.log('💳 Inicializando Wompi Widget Inline...');
+
+    const scriptId = 'wompi-widget-script';
+    let script = document.getElementById(scriptId) as HTMLScriptElement;
+
+    const initWidget = () => {
+      try {
+        const checkout = new (window as any).WidgetCheckout({
+          currency: 'COP',
+          amountInCents: Math.round(orderData.total * 100),
+          reference: `WC-${orderData.id}`,
+          publicKey: WOMPI_PUBLIC_KEY,
+          signature: orderData.signature,
+          renderMode: 'inline',
+          containerId: 'wompi-payment-container',
+          redirectUrl: `${window.location.origin}/success`,
+          theme: {
+            primaryColor: '#054a29',
+            fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+            borderRadius: '12px'
+          },
+          paymentMethods: {
+            card: true, nequi: true, pse: true, bancolombia_transfer: true, bancolombia_qr: true
+          }
+        });
+
+        checkout.open((result: any) => {
+          console.log('ℹ️ Wompi Result:', result);
+          if (result && result.transaction && result.transaction.status === 'APPROVED') {
+            window.location.href = `/success?id=${result.transaction.id}&reference=WC-${orderData.id}&status=APPROVED`;
+          }
+        });
+
+        setIsLoadingPayment(false);
+      } catch (err) {
+        console.error('❌ Error inicializando Wompi:', err);
+        alert('Error cargando pasarela de pago.');
+        setIsLoadingPayment(false);
+      }
+    };
+
+    if (!script) {
+      script = document.createElement('script');
+      script.src = 'https://checkout.wompi.co/widget.js';
+      script.async = true;
+      script.id = scriptId;
+      script.onload = initWidget;
+      document.body.appendChild(script);
+    } else {
+      initWidget();
+    }
+
+    return () => {
+      // Opcionalmente limpiar si es necesario
+    };
+  }, [showPayment, orderData, WOMPI_PUBLIC_KEY]);
+
   const subtotal = Math.round(totalPrice / 1.19);
   const iva = totalPrice - subtotal;
+
+  if (showPayment && orderData) {
+    return (
+      <div className="checkout-page pt-32">
+        <div className="payment-section">
+          {/* Resumen lateral */}
+          <div className="order-summary">
+            <h2 className="font-black uppercase tracking-tight">Resumen de tu Pedido</h2>
+            <div className="order-details">
+              <p><span>Referencia:</span> <strong>WC-{orderData.id}</strong></p>
+              <p><span>Total:</span> <strong>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(orderData.total)}</strong></p>
+            </div>
+
+            <div className="security-badges space-y-2">
+              <p className="flex items-center gap-2"><ShieldCheck size={16} className="text-[#054a29]" /> Pago 100% seguro</p>
+              <p className="flex items-center gap-2"><Lock size={16} className="text-[#054a29]" /> Encriptación SSL</p>
+            </div>
+
+            <button
+              onClick={() => {
+                setShowPayment(false);
+                setIsSubmitting(false);
+              }}
+              className="btn-secondary"
+            >
+              ← Volver al checkout
+            </button>
+          </div>
+
+          {/* Contenedor del Widget */}
+          <div className="payment-widget-wrapper">
+            <h2 className="font-black uppercase tracking-tight flex items-center justify-between">
+              Completa tu Pago
+              <img src="https://wompi.co/wp-content/uploads/2021/08/logo-wompi.png" alt="Wompi" className="h-4 opacity-50" />
+            </h2>
+
+            {isLoadingPayment && (
+              <div className="payment-loading">
+                <div className="spinner"></div>
+                <p className="font-bold text-gray-400">Cargando pasarela de pago segura...</p>
+              </div>
+            )}
+
+            <div
+              id="wompi-payment-container"
+              ref={wompiContainerRef}
+              className="wompi-inline-widget"
+              style={{ display: isLoadingPayment ? 'none' : 'block' }}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="pt-0 lg:pt-32 min-h-screen bg-gray-50/50 pb-32">
       <div className="max-w-3xl mx-auto px-4 py-8 md:py-12">
-        {/* Progress Indicator */}
+        {/* Indicador de Progreso */}
         <div className="mb-12">
           <div className="flex items-center justify-between relative max-w-md mx-auto">
             <div className="absolute top-5 left-0 right-0 h-1 bg-gray-200 -z-0">
@@ -201,7 +295,6 @@ const Checkout: React.FC = () => {
               </div>
               <p className="text-emerald-50/60 font-medium text-sm">Información requerida para facturación y envío.</p>
             </div>
-            <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/5 rounded-full blur-3xl"></div>
           </div>
 
           <form onSubmit={handleSubmit} className="p-8 md:p-12 space-y-8">
@@ -302,7 +395,6 @@ const Checkout: React.FC = () => {
               />
             </div>
 
-            {/* Pasarela de Pago Única */}
             <div className="pt-8 border-t border-gray-100 space-y-4">
               <label className="flex items-center gap-2 text-[10px] font-black text-[#054a29] uppercase tracking-widest">
                 <ShieldCheck size={14} /> Pasarela de Pago
@@ -315,18 +407,15 @@ const Checkout: React.FC = () => {
                   </div>
                 </div>
                 <p className="text-[10px] font-bold text-gray-500 leading-relaxed">PSE, Nequi, Botón Bancolombia y Tarjetas.</p>
-                <div className="flex items-center gap-3 grayscale hover:grayscale-0 transition-all cursor-default">
-                  <div className="flex gap-4 mt-3 grayscale opacity-60">
-                    <img src="/images/assets/nequi.svg" alt="Nequi" className="h-6 object-contain" />
-                    <img src="/images/assets/pse.svg" alt="PSE" className="h-6 object-contain" />
-                    <img src="/images/assets/bancolombia.svg" alt="Bancolombia" className="h-6 object-contain" />
-                  </div>
+                <div className="flex gap-4 mt-3 grayscale opacity-60">
+                  <img src="/images/assets/nequi.svg" alt="Nequi" className="h-6 object-contain" />
+                  <img src="/images/assets/pse.svg" alt="PSE" className="h-6 object-contain" />
+                  <img src="/images/assets/bancolombia.svg" alt="Bancolombia" className="h-6 object-contain" />
                 </div>
               </div>
             </div>
 
             <div className="pt-8 border-t border-gray-100">
-              {/* Desglose de Costos Premium */}
               <div className="space-y-4 mb-8">
                 <div className="flex justify-between items-center text-sm font-medium text-gray-500">
                   <span>Subtotal ({totalItems} {totalItems === 1 ? 'producto' : 'productos'})</span>
@@ -369,7 +458,6 @@ const Checkout: React.FC = () => {
                 </div>
               </div>
 
-              {/* Botones de Pago */}
               <button
                 type="submit"
                 disabled={Object.keys(errors).length > 0 || isSubmitting}
@@ -377,15 +465,15 @@ const Checkout: React.FC = () => {
               >
                 {isSubmitting ? (
                   <span className="flex items-center gap-2">
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Conectando con Bancolombia...
+                    <div className="w-5 h-5 border-2 border-[#054a29] border-t-transparent rounded-full animate-spin" />
+                    Procesando...
                   </span>
                 ) : (
                   <>Pagar con Wompi <Send size={24} className="group-hover:translate-x-1 transition-transform" /></>
                 )}
               </button>
 
-              <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 shadow-2xl">
+              <div className="md:hidden fixed bottom-1 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 shadow-2xl rounded-t-3xl">
                 <button
                   type="submit"
                   disabled={Object.keys(errors).length > 0 || isSubmitting}
@@ -399,7 +487,6 @@ const Checkout: React.FC = () => {
             </div>
           </form>
 
-          {/* Trust Signals */}
           <div className="px-8 md:px-12 pb-12 pt-4 border-t border-gray-50 bg-gray-50/30">
             <div className="flex flex-wrap items-center justify-center gap-6 mb-8 mt-4">
               <div className="flex items-center gap-2 text-gray-400 font-bold uppercase text-[10px] tracking-widest">
