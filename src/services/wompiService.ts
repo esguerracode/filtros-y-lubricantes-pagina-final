@@ -339,7 +339,7 @@ export const generateWompiPaymentLink = (transactionData: WompiTransactionData):
         'amount-in-cents': (transactionData.amountInCents || 0).toString(),
         reference: transactionData.reference || `FYL-FALLBACK-${Date.now()}`,
         'redirect-url': transactionData.redirectUrl || window.location.origin,
-        'signature': transactionData.integritySignature || '' // Parameter name is 'signature' for links
+        'signature:integrity': transactionData.integritySignature || '' // Correct name for WebCheckout
     };
 
     const params = new URLSearchParams();
