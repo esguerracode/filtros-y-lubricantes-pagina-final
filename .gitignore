@@ -48,3 +48,4 @@ extracted_images/
 # No ignorar KITS.docx si es necesario como fuente, pero mejor ignorarlo si ya extrajimos
 # KITS.docx
 
+.vercel

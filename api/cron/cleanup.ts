@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { updateOrder } from '../_utils/woo';
+import { updateOrder } from '../_utils/woo.js';
 
 const WC_URL = process.env.VITE_WP_URL;
 const CK = process.env.WC_CONSUMER_KEY;

@@ -15,7 +15,7 @@ import WhatsAppButton from './components/WhatsAppButton';
 import MobileActionBar from './components/MobileActionBar';
 import ScrollToTop from './components/ScrollToTop';
 import { CartProvider } from './components/CartContext';
-import PropagationBanner from './components/PropagationBanner';
+
 
 function App() {
   // Detector de versión para manejar propagación DNS
@@ -43,7 +43,7 @@ function App() {
       <Router>
         <ScrollToTop />
         <div className="min-h-screen bg-white flex flex-col">
-          <PropagationBanner />
+
           <Navbar />
 
           <main className="flex-grow">

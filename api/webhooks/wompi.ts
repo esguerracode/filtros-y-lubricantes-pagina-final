@@ -1,6 +1,6 @@
 import { kv } from '@vercel/kv';
-import { validateWompiSignature, copToCents, mapWompiStatus } from '../_utils/wompi';
-import { getOrderByReference, updateOrderWithRetry } from '../_utils/woo';
+import { validateWompiSignature, copToCents, mapWompiStatus } from '../_utils/wompi.js';
+import { getOrderByReference, updateOrderWithRetry } from '../_utils/woo.js';
 
 export default async function handler(req: any, res: any) {
     if (req.method !== 'POST') {

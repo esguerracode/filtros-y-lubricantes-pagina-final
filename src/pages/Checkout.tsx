@@ -1,508 +1,331 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../components/CartContext';
-import { ArrowLeft, Send, MapPin, User, Phone, Check, ShieldCheck, Lock, AlertCircle, Truck } from 'lucide-react';
-import '../styles/checkout.css'; // Estilos para el widget inline
-import { trackInitiateCheckout } from '../utils/analytics';
+import { WompiPaymentForm } from '../components/WompiPaymentForm';
+import {
+  ShoppingBag,
+  ChevronLeft,
+  CreditCard,
+  Truck,
+  ShieldCheck,
+  Info,
+  ChevronRight,
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Building,
+  ArrowRight,
+  AlertCircle,
+  Clock,
+  Lock
+} from 'lucide-react';
+import '../styles/checkout.css';
 
 const Checkout: React.FC = () => {
   const { cart, totalPrice, totalItems } = useCart();
   const navigate = useNavigate();
-  const wompiContainerRef = useRef<HTMLDivElement>(null);
 
-  // Estados para Pago Inline
-  const [showPayment, setShowPayment] = useState(false);
-  const [orderData, setOrderData] = useState<any>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoadingPayment, setIsLoadingPayment] = useState(false);
-
-  // Analytics: InitiateCheckout
-  useEffect(() => {
-    if (cart.length > 0) {
-      trackInitiateCheckout(cart, totalPrice);
-    }
-  }, []);
-
-  // State con persistencia desde localStorage
-  const [shippingData, setShippingData] = useState(() => {
-    const saved = localStorage.getItem('checkout_draft');
-    return saved ? JSON.parse(saved) : {
-      nombre: '',
-      email: '',
-      telefono: '',
-      ciudad: '',
-      direccion: '',
-      notas: ''
-    };
+  const [shipping, setShipping] = useState({
+    nombre: '',
+    email: '',
+    telefono: '',
+    ciudad: '',
+    direccion: '',
+    nit: ''
   });
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  // Persistir datos del formulario en localStorage
-  useEffect(() => {
-    localStorage.setItem('checkout_draft', JSON.stringify(shippingData));
-  }, [shippingData]);
-
-  // CONFIGURACIÓN WOMPI & LOGGING
-  const WOMPI_PUBLIC_KEY = import.meta.env?.VITE_WOMPI_PUBLIC_KEY || 'pub_prod_N3wRyFLmr5kSWrRZa4nTS07CctnJnJ2w';
+  const [loading, setLoading] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
+  const [orderData, setOrderData] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!import.meta.env?.VITE_WOMPI_PUBLIC_KEY) {
-      console.warn('⚠️ WOMPI: Variable VITE_WOMPI_PUBLIC_KEY no encontrada. Usando fallback de PRODUCCIÓN.');
-    } else {
-      console.log('✅ WOMPI: Variable cargada correctamente');
+    if (cart.length === 0 && !showPayment) {
+      navigate('/carrito');
     }
-    console.log('🔐 WOMPI: Inicializando con clave:', WOMPI_PUBLIC_KEY.substring(0, 20) + '...');
-  }, []);
+  }, [cart, navigate, showPayment]);
 
-  if (cart.length === 0 && !showPayment) {
-    navigate('/carrito');
-    return null;
-  }
-
-  const validateField = (name: string, value: string) => {
-    const newErrors = { ...errors };
-    if (name === 'telefono') {
-      const cleanPhone = value.replace(/\s/g, '');
-      if (cleanPhone && !/^[0-9]{10}$/.test(cleanPhone)) {
-        newErrors.telefono = 'Ingresa un número válido de 10 dígitos';
-      } else {
-        delete newErrors.telefono;
-      }
-    }
-    if (name === 'nombre') {
-      if (value && value.length < 3) {
-        newErrors.nombre = 'El nombre es muy corto';
-      } else {
-        delete newErrors.nombre;
-      }
-    }
-    if (name === 'email') {
-      if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-        newErrors.email = 'Email inválido';
-      } else {
-        delete newErrors.email;
-      }
-    }
-    setErrors(newErrors);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleOrderStep = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (Object.keys(errors).length > 0) return;
-    setIsSubmitting(true);
+    setLoading(true);
+    setError(null);
 
-    localStorage.setItem('last_shipping', JSON.stringify(shippingData));
+    // Guardar borrador
+    localStorage.setItem('checkout_draft', JSON.stringify(shipping));
 
     try {
-      const response = await fetch('/api/orders/create', {
+      // 1. Crear Orden en WooCommerce mediante nuestro Proxy
+      const orderRes = await fetch('/api/orders/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items: cart.map(item => ({ id: item.id, quantity: item.quantity })),
+          items: cart.map(item => ({ id: item.id, quantity: item.quantity, price: item.price })),
           customer: {
-            fullName: shippingData.nombre,
-            email: shippingData.email,
-            phoneNumber: shippingData.telefono.replace(/\D/g, ''),
-            address: shippingData.direccion,
-            city: shippingData.ciudad,
-            department: shippingData.ciudad.split(',')[1]?.trim() || shippingData.ciudad
+            fullName: shipping.nombre,
+            email: shipping.email,
+            phoneNumber: shipping.telefono,
+            address: shipping.direccion,
+            city: shipping.ciudad,
+            department: shipping.ciudad // Simplificado
           }
         })
       });
 
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error || 'Error creating order');
-      }
+      const data = await orderRes.json();
 
-      const orderResponse = await response.json();
-      console.log('📦 Orden creada:', orderResponse);
+      if (!orderRes.ok) throw new Error(data.error || 'Fallo al crear la orden');
 
-      setOrderData(orderResponse);
+      setOrderData(data);
       setShowPayment(true);
-      setIsLoadingPayment(true);
 
-    } catch (error: any) {
-      console.error('❌ Error creando orden:', error);
-      alert(`Error iniciando pago: ${error.message}`);
-      setIsSubmitting(false);
+      // Guardar info para la página de success
+      localStorage.setItem('last_shipping', JSON.stringify(shipping));
+      localStorage.setItem('last_order_ref', `ORD-${data.id}`);
+
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // LÓGICA DEL WIDGET INLINE DE WOMPI
-  useEffect(() => {
-    if (!showPayment || !orderData) return;
+  const handlePaymentSuccess = (data: any) => {
+    console.log('✅ Pago aprobado:', data);
+    navigate(`/success?status=approved&reference=${data.reference}&id=${data.id}`);
+  };
 
-    console.log('💳 Inicializando Wompi Widget Inline...');
+  const formattedPrice = (price: number) => new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    maximumFractionDigits: 0,
+  }).format(price);
 
-    const scriptId = 'wompi-widget-script';
-    let script = document.getElementById(scriptId) as HTMLScriptElement;
+  return (
+    <div className="min-h-screen bg-gray-50 pb-20 pt-8 lg:pt-32">
+      {/* Header Simplificado para Checkout */}
+      <div className="max-w-7xl mx-auto px-4 mb-8 flex items-center justify-between">
+        <Link to="/carrito" className="flex items-center gap-2 text-gray-400 hover:text-gray-900 font-bold text-sm transition-colors">
+          <ChevronLeft size={20} />
+          Volver al Carrito
+        </Link>
+        <div className="flex items-center gap-2">
+          <ShieldCheck size={20} className="text-[#054a29]" />
+          <span className="text-xs font-black uppercase tracking-tighter text-gray-400">Checkout Seguro SSL</span>
+        </div>
+      </div>
 
-    const initWidget = () => {
-      try {
-        const checkout = new (window as any).WidgetCheckout({
-          currency: 'COP',
-          amountInCents: Math.round(orderData.total * 100),
-          reference: `WC-${orderData.id}`,
-          publicKey: WOMPI_PUBLIC_KEY,
-          signature: orderData.signature,
-          renderMode: 'inline',
-          containerId: 'wompi-payment-container',
-          redirectUrl: `${window.location.origin}/success`,
-          theme: {
-            primaryColor: '#054a29',
-            fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-            borderRadius: '12px'
-          },
-          paymentMethods: {
-            card: true, nequi: true, pse: true, bancolombia_transfer: true, bancolombia_qr: true
-          }
-        });
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
 
-        checkout.open((result: any) => {
-          console.log('ℹ️ Wompi Result:', result);
-          if (result && result.transaction && result.transaction.status === 'APPROVED') {
-            window.location.href = `/success?id=${result.transaction.id}&reference=WC-${orderData.id}&status=APPROVED`;
-          }
-        });
+          {/* Columna Izquierda: Formularios */}
+          <div className="lg:col-span-7">
 
-        setIsLoadingPayment(false);
-      } catch (err) {
-        console.error('❌ Error inicializando Wompi:', err);
-        alert('Error cargando pasarela de pago.');
-        setIsLoadingPayment(false);
-      }
-    };
+            {!showPayment ? (
+              <div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100 p-8 md:p-12 animate-fade-in-up">
+                <div className="flex items-center gap-4 mb-10">
+                  <div className="w-12 h-12 bg-[#054a29] text-white rounded-2xl flex items-center justify-center font-black shadow-lg shadow-emerald-100 text-xl">
+                    1
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-black text-gray-900 leading-none">Envío</h2>
+                    <p className="text-sm text-gray-400 mt-1">¿A dónde enviamos tus productos?</p>
+                  </div>
+                </div>
 
-    if (!script) {
-      script = document.createElement('script');
-      script.src = 'https://checkout.wompi.co/widget.js';
-      script.async = true;
-      script.id = scriptId;
-      script.onload = initWidget;
-      document.body.appendChild(script);
-    } else {
-      initWidget();
-    }
+                <form onSubmit={handleOrderStep} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">Nombre Completo</label>
+                      <div className="relative">
+                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <input
+                          type="text" placeholder="Juan Pérez" required
+                          className="w-full pl-12 pr-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-emerald-50 outline-none transition-all font-medium"
+                          value={shipping.nombre} onChange={e => setShipping({ ...shipping, nombre: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">Correo Electrónico</label>
+                      <div className="relative">
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <input
+                          type="email" placeholder="juan@correo.com" required
+                          className="w-full pl-12 pr-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-emerald-50 outline-none transition-all font-medium"
+                          value={shipping.email} onChange={e => setShipping({ ...shipping, email: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                  </div>
 
-    return () => {
-      // Opcionalmente limpiar si es necesario
-    };
-  }, [showPayment, orderData, WOMPI_PUBLIC_KEY]);
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">WhatsApp / Teléfono</label>
+                      <div className="relative">
+                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <input
+                          type="tel" placeholder="310 123 4567" required
+                          className="w-full pl-12 pr-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-emerald-50 outline-none transition-all font-medium"
+                          value={shipping.telefono} onChange={e => setShipping({ ...shipping, telefono: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">Ciudad</label>
+                      <div className="relative">
+                        <Building className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <input
+                          type="text" placeholder="Villavicencio" required
+                          className="w-full pl-12 pr-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-emerald-50 outline-none transition-all font-medium"
+                          value={shipping.ciudad} onChange={e => setShipping({ ...shipping, ciudad: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                  </div>
 
-  const subtotal = Math.round(totalPrice / 1.19);
-  const iva = totalPrice - subtotal;
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">Dirección de Entrega</label>
+                    <div className="relative">
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                      <input
+                        type="text" placeholder="Calle 10 # 5-20, Barrio Centro" required
+                        className="w-full pl-12 pr-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-emerald-50 outline-none transition-all font-medium"
+                        value={shipping.direccion} onChange={e => setShipping({ ...shipping, direccion: e.target.value })}
+                      />
+                    </div>
+                  </div>
 
-  if (showPayment && orderData) {
-    return (
-      <div className="checkout-page pt-32">
-        <div className="payment-section">
-          {/* Resumen lateral */}
-          <div className="order-summary">
-            <h2 className="font-black uppercase tracking-tight">Resumen de tu Pedido</h2>
-            <div className="order-details">
-              <p><span>Referencia:</span> <strong>WC-{orderData.id}</strong></p>
-              <p><span>Total:</span> <strong>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(orderData.total)}</strong></p>
-            </div>
+                  {error && (
+                    <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl flex items-start gap-3 animate-shake">
+                      <AlertCircle className="shrink-0" size={20} />
+                      <p className="text-sm font-medium">{error}</p>
+                    </div>
+                  )}
 
-            <div className="security-badges space-y-2">
-              <p className="flex items-center gap-2"><ShieldCheck size={16} className="text-[#054a29]" /> Pago 100% seguro</p>
-              <p className="flex items-center gap-2"><Lock size={16} className="text-[#054a29]" /> Encriptación SSL</p>
-            </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-[#054a29] text-white py-6 rounded-2xl font-black text-xl flex items-center justify-center gap-3 hover:bg-[#04331d] transition-all shadow-xl shadow-emerald-100 active:scale-[0.98] disabled:opacity-50 mt-4 group"
+                  >
+                    {loading ? (
+                      <div className="flex items-center gap-3">
+                        <div className="loading-spinner h-6 w-6 border-4 border-white/30 border-t-white animate-spin"></div>
+                        <span>Generando Pedido...</span>
+                      </div>
+                    ) : (
+                      <>
+                        Continuar al Pago
+                        <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100 p-8 md:p-12 animate-fade-in-up">
+                <div className="flex items-center gap-4 mb-10">
+                  <div className="w-12 h-12 bg-[#054a29] text-white rounded-2xl flex items-center justify-center font-black shadow-lg shadow-emerald-100 text-xl">
+                    2
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-black text-gray-900 leading-none">Pago Seguro</h2>
+                    <p className="text-sm text-[#054a29] font-bold mt-1 uppercase tracking-tighter italic">Orden #{orderData?.id} Generada</p>
+                  </div>
+                </div>
 
-            <button
-              onClick={() => {
-                setShowPayment(false);
-                setIsSubmitting(false);
-              }}
-              className="btn-secondary"
-            >
-              ← Volver al checkout
-            </button>
-          </div>
+                {orderData && (
+                  <WompiPaymentForm
+                    amount={Math.round(orderData.total * 100)}
+                    orderReference={`WC-${orderData.id}`}
+                    customerEmail={shipping.email}
+                    onSuccess={handlePaymentSuccess}
+                    onError={(msg) => setError(msg)}
+                  />
+                )}
 
-          {/* Contenedor del Widget */}
-          <div className="payment-widget-wrapper">
-            <h2 className="font-black uppercase tracking-tight flex items-center justify-between">
-              Completa tu Pago
-              <img src="https://wompi.co/wp-content/uploads/2021/08/logo-wompi.png" alt="Wompi" className="h-4 opacity-50" />
-            </h2>
-
-            {isLoadingPayment && (
-              <div className="payment-loading">
-                <div className="spinner"></div>
-                <p className="font-bold text-gray-400">Cargando pasarela de pago segura...</p>
+                <button
+                  onClick={() => setShowPayment(false)}
+                  className="mt-10 py-4 px-6 text-gray-400 font-bold flex items-center gap-2 hover:text-gray-600 transition-all w-full justify-center bg-gray-50 rounded-2xl"
+                >
+                  <ChevronLeft size={18} />
+                  Corregir información de envío
+                </button>
               </div>
             )}
 
-            <div
-              id="wompi-payment-container"
-              ref={wompiContainerRef}
-              className="wompi-inline-widget"
-              style={{ display: isLoadingPayment ? 'none' : 'block' }}
-            />
           </div>
-        </div>
-      </div>
-    );
-  }
 
-  return (
-    <div className="pt-0 lg:pt-32 min-h-screen bg-gray-50/50 pb-32">
-      <div className="max-w-3xl mx-auto px-4 py-8 md:py-12">
-        {/* Indicador de Progreso */}
-        <div className="mb-12">
-          <div className="flex items-center justify-between relative max-w-md mx-auto">
-            <div className="absolute top-5 left-0 right-0 h-1 bg-gray-200 -z-0">
-              <div className="h-full bg-[#054a29] transition-all duration-700" style={{ width: '66%' }} />
-            </div>
-
-            {[
-              { label: 'Carrito', icon: <Check size={18} />, active: true, done: true },
-              { label: 'Envío', content: '2', active: true, done: false },
-              { label: 'Pago', content: '3', active: true, done: false }
-            ].map((step, idx) => (
-              <div key={idx} className="flex flex-col items-center relative z-10">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-500 ${step.active ? 'bg-[#054a29] text-white shadow-lg' : 'bg-white border-2 border-gray-200 text-gray-400'
-                  }`}>
-                  {step.done ? <Check size={20} /> : (step.content || idx + 1)}
+          {/* Columna Derecha: Resumen */}
+          <div className="lg:col-span-5">
+            <div className="bg-white rounded-[2.5rem] shadow-2xl p-8 border border-gray-100 sticky top-32">
+              <h3 className="text-xl font-black text-gray-900 mb-8 flex items-center gap-3">
+                <div className="w-8 h-8 bg-emerald-50 text-[#054a29] rounded-lg flex items-center justify-center">
+                  <ShoppingBag size={18} />
                 </div>
-                <span className={`text-[10px] uppercase font-black mt-2 tracking-widest ${step.active ? 'text-[#054a29]' : 'text-gray-400'}`}>
-                  {step.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+                Tu Carrito
+              </h3>
 
-        <button
-          onClick={() => navigate('/carrito')}
-          className="flex items-center gap-2 text-gray-400 hover:text-[#054a29] font-black uppercase text-[10px] tracking-widest mb-6 transition-colors group"
-        >
-          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Volver al Carrito
-        </button>
-
-        <div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100">
-          <div className="bg-[#054a29] p-8 md:p-10 text-white relative overflow-hidden">
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-2">
-                <h1 className="text-3xl md:text-4xl font-black tracking-tight uppercase">Datos de Envío</h1>
-                <div className="hidden sm:flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
-                  <ShieldCheck size={18} />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">Pago Seguro Wompi</span>
-                </div>
-              </div>
-              <p className="text-emerald-50/60 font-medium text-sm">Información requerida para facturación y envío.</p>
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="p-8 md:p-12 space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-3">
-                <label className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                  <User size={14} className="text-[#054a29]" /> Nombre Completo
-                </label>
-                <input
-                  required
-                  type="text"
-                  placeholder="Ej: Juan Pérez"
-                  className={`w-full px-6 py-4 bg-gray-50/50 border rounded-2xl focus:ring-4 outline-none transition-all ${errors.nombre ? 'border-red-300 focus:ring-red-100' : 'border-gray-100 focus:ring-emerald-50 focus:border-emerald-200'
-                    }`}
-                  value={shippingData.nombre}
-                  onChange={e => {
-                    setShippingData({ ...shippingData, nombre: e.target.value });
-                    validateField('nombre', e.target.value);
-                  }}
-                />
-              </div>
-
-              <div className="space-y-3">
-                <label className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                  <User size={14} className="text-[#054a29]" /> Correo Electrónico
-                </label>
-                <input
-                  required
-                  type="email"
-                  placeholder="ejemplo@correo.com"
-                  className={`w-full px-6 py-4 bg-gray-50/50 border rounded-2xl focus:ring-4 outline-none transition-all ${errors.email ? 'border-red-300 focus:ring-red-100' : 'border-gray-100 focus:ring-emerald-50 focus:border-emerald-200'
-                    }`}
-                  value={shippingData.email}
-                  onChange={e => {
-                    setShippingData({ ...shippingData, email: e.target.value });
-                    validateField('email', e.target.value);
-                  }}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-3">
-                <label className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                  <Phone size={14} className="text-[#054a29]" /> WhatsApp / Teléfono
-                </label>
-                <input
-                  required
-                  type="tel"
-                  placeholder="Ej: 314 000 0000"
-                  className={`w-full px-6 py-4 bg-gray-50/50 border rounded-2xl focus:ring-4 outline-none transition-all ${errors.telefono ? 'border-red-300 focus:ring-red-100' : 'border-gray-100 focus:ring-emerald-50 focus:border-emerald-200'
-                    }`}
-                  value={shippingData.telefono}
-                  onChange={e => {
-                    setShippingData({ ...shippingData, telefono: e.target.value });
-                    validateField('telefono', e.target.value);
-                  }}
-                />
-              </div>
-
-              <div className="space-y-3">
-                <label className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                  <MapPin size={14} className="text-[#054a29]" /> Ciudad / Municipio
-                </label>
-                <input
-                  required
-                  type="text"
-                  placeholder="Ej: Villavicencio, Meta"
-                  className="w-full px-6 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-emerald-50 outline-none transition-all"
-                  value={shippingData.ciudad}
-                  onChange={e => setShippingData({ ...shippingData, ciudad: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <label className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                <Truck size={14} className="text-[#054a29]" /> Dirección Exacta
-              </label>
-              <input
-                required
-                type="text"
-                placeholder="Ej: Calle 10 # 5-20, Barrio Centro"
-                className="w-full px-6 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-emerald-50 outline-none transition-all"
-                value={shippingData.direccion}
-                onChange={e => setShippingData({ ...shippingData, direccion: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest block">Notas Adicionales (Opcional)</label>
-              <textarea
-                rows={3}
-                placeholder="Instrucciones especiales para la entrega..."
-                className="w-full px-6 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-emerald-50 outline-none transition-all resize-none"
-                value={shippingData.notas}
-                onChange={e => setShippingData({ ...shippingData, notas: e.target.value })}
-              />
-            </div>
-
-            <div className="pt-8 border-t border-gray-100 space-y-4">
-              <label className="flex items-center gap-2 text-[10px] font-black text-[#054a29] uppercase tracking-widest">
-                <ShieldCheck size={14} /> Pasarela de Pago
-              </label>
-              <div className="p-6 rounded-3xl border-2 border-[#054a29] bg-emerald-50/50 flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-black text-sm uppercase tracking-tight">Wompi / Bancolombia</span>
-                  <div className="w-5 h-5 rounded-full bg-[#054a29] flex items-center justify-center">
-                    <Check size={12} className="text-white" />
+              <div className="space-y-6 mb-8 max-h-[35vh] overflow-y-auto pr-2 custom-scrollbar">
+                {cart.map((item) => (
+                  <div key={item.id} className="flex gap-4 group">
+                    <div className="w-20 h-20 bg-gray-50 rounded-2xl border border-gray-100 p-2 shrink-0 group-hover:scale-105 transition-transform overflow-hidden">
+                      <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
+                    </div>
+                    <div className="flex-1 py-1">
+                      <h4 className="font-bold text-gray-800 text-sm line-clamp-2 leading-tight">{item.name}</h4>
+                      <div className="flex justify-between items-center mt-2">
+                        <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{item.quantity} Uni.</span>
+                        <p className="font-black text-[#054a29] italic">{formattedPrice(item.price * item.quantity)}</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <p className="text-[10px] font-bold text-gray-500 leading-relaxed">PSE, Nequi, Botón Bancolombia y Tarjetas.</p>
-                <div className="flex gap-4 mt-3 grayscale opacity-60">
-                  <img src="/images/assets/nequi.svg" alt="Nequi" className="h-6 object-contain" />
-                  <img src="/images/assets/pse.svg" alt="PSE" className="h-6 object-contain" />
-                  <img src="/images/assets/bancolombia.svg" alt="Bancolombia" className="h-6 object-contain" />
-                </div>
+                ))}
               </div>
-            </div>
 
-            <div className="pt-8 border-t border-gray-100">
-              <div className="space-y-4 mb-8">
-                <div className="flex justify-between items-center text-sm font-medium text-gray-500">
-                  <span>Subtotal ({totalItems} {totalItems === 1 ? 'producto' : 'productos'})</span>
-                  <span>
-                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(subtotal)}
-                  </span>
+              <div className="space-y-4 pt-8 border-t border-gray-100">
+                <div className="flex justify-between text-gray-400 font-bold uppercase text-[10px] tracking-widest px-2">
+                  <span>Productos ({totalItems})</span>
+                  <span>{formattedPrice(totalPrice)}</span>
+                </div>
+                <div className="flex justify-between text-gray-400 font-bold uppercase text-[10px] tracking-widest px-2">
+                  <span>Envío Nacional</span>
+                  <span className="text-emerald-500">Gratis 🎉</span>
                 </div>
 
-                <div className="flex justify-between items-center text-sm font-medium text-gray-500">
-                  <span className="flex items-center gap-1.5">
-                    IVA (19%)
-                    <AlertCircle size={14} className="text-gray-300" />
-                  </span>
-                  <span>
-                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(iva)}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center text-[#054a29] bg-emerald-50/50 px-4 py-2 rounded-xl border border-emerald-100/50">
-                  <span className="flex items-center gap-2 text-xs font-black uppercase tracking-widest">
-                    <Truck size={14} /> Envío Nacional
-                  </span>
-                  <span className="font-black text-sm">GRATIS</span>
-                </div>
-
-                <div className="relative py-2">
+                <div className="relative py-4">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-dashed border-gray-200"></div>
                   </div>
                 </div>
 
-                <div className="flex justify-between items-end pt-2">
+                <div className="flex justify-between items-end px-2">
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] leading-none mb-1">Total a Pagar</span>
-                    <span className="text-sm font-bold text-gray-400">IVA incluido</span>
+                    <span className="text-xs font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Total a Pagar</span>
+                    <span className="text-[10px] font-bold text-gray-300">IVA incluido</span>
                   </div>
-                  <span className="text-5xl font-black text-[#054a29] tracking-tighter leading-none">
-                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(totalPrice)}
-                  </span>
+                  <div className="text-right">
+                    <span className="text-4xl font-black text-gray-900 tracking-tighter leading-none block">
+                      {formattedPrice(totalPrice)}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={Object.keys(errors).length > 0 || isSubmitting}
-                className="hidden md:flex w-full bg-[#d4e157] text-[#054a29] py-6 rounded-2xl font-black text-xl items-center justify-center gap-3 hover:bg-[#054a29] hover:text-white transition-all active:scale-95 shadow-xl uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed group"
-              >
-                {isSubmitting ? (
-                  <span className="flex items-center gap-2">
-                    <div className="w-5 h-5 border-2 border-[#054a29] border-t-transparent rounded-full animate-spin" />
-                    Procesando...
-                  </span>
-                ) : (
-                  <>Pagar con Wompi <Send size={24} className="group-hover:translate-x-1 transition-transform" /></>
-                )}
-              </button>
-
-              <div className="md:hidden fixed bottom-1 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 shadow-2xl rounded-t-3xl">
-                <button
-                  type="submit"
-                  disabled={Object.keys(errors).length > 0 || isSubmitting}
-                  className="w-full bg-[#d4e157] text-[#054a29] py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-3 active:scale-95 shadow-xl uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? 'Procesando...' : (
-                    <>Pagar {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(totalPrice)} <Send size={20} /></>
-                  )}
-                </button>
+              {/* Seguridad Extra */}
+              <div className="mt-8 grid grid-cols-2 gap-4">
+                <div className="flex flex-col items-center p-4 bg-gray-50 rounded-2xl text-center">
+                  <Truck className="text-gray-400 mb-2" size={20} />
+                  <p className="text-[9px] font-black uppercase text-gray-500">Entrega rápida</p>
+                </div>
+                <div className="flex flex-col items-center p-4 bg-gray-50 rounded-2xl text-center">
+                  <Lock className="text-gray-400 mb-2" size={20} />
+                  <p className="text-[9px] font-black uppercase text-gray-500">100% Seguro</p>
+                </div>
               </div>
-            </div>
-          </form>
-
-          <div className="px-8 md:px-12 pb-12 pt-4 border-t border-gray-50 bg-gray-50/30">
-            <div className="flex flex-wrap items-center justify-center gap-6 mb-8 mt-4">
-              <div className="flex items-center gap-2 text-gray-400 font-bold uppercase text-[10px] tracking-widest">
-                <ShieldCheck size={18} className="text-[#054a29]" /> PCI DSS Compliance
-              </div>
-              <div className="flex items-center gap-2 text-gray-400 font-bold uppercase text-[10px] tracking-widest">
-                <Lock size={18} className="text-[#054a29]" /> SSL Encriptado
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center gap-8 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
-              <img src="https://wompi.co/wp-content/uploads/2021/08/logo-nequi.png" alt="Nequi" className="h-5" />
-              <img src="https://wompi.co/wp-content/uploads/2021/08/logo-pse.png" alt="PSE" className="h-5" />
-              <img src="https://www.bancolombia.com/wps/wcm/connect/649d682e-9d82-4d92-887e-d39f4f46937e/logo-bancolombia.png?MOD=AJPERES&CVID=mO.L8D8" alt="Bancolombia" className="h-5" />
             </div>
           </div>
+
         </div>
       </div>
     </div>

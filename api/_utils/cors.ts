@@ -27,8 +27,9 @@ export function validateOrigin(req: any): boolean {
     const allowed = [
         process.env.VITE_APP_URL,
         'http://localhost:5173', // Localhost
-        'https://filtrosylubricantes.com', // Production
-        'https://www.filtrosylubricantes.com'
+        'https://filtrosylubricantes.co', // Production
+        'https://www.filtrosylubricantes.co',
+        'https://esguerracode-filtros-y-lubricantes-pagina-final.vercel.app'
     ];
 
     // Server-to-server or no-origin (e.g. Postman) might need specific handling, 

@@ -1,29 +1,26 @@
 import crypto from 'crypto';
 
-export function validateWompiSignature(payload: any, signature: string): boolean {
+export function validateWompiSignature(payload: any, signatureObj: any): boolean {
     const secret = process.env.WOMPI_EVENTS_SECRET;
     if (!secret) throw new Error('WOMPI_EVENTS_SECRET missing');
 
     const { data, timestamp } = payload;
     const { transaction } = data;
 
-    // Concatenate per Wompi Spec
-    // timestamp + id + status + amount_in_cents
-    const chain = `${timestamp}${transaction.id}${transaction.status}${transaction.amount_in_cents}`;
+    // Spec: concat(transaction.id + transaction.status + transaction.amount_in_cents + timestamp + secret)
+    const checksum = `${transaction.id}${transaction.status}${transaction.amount_in_cents}`;
+    const chain = `${checksum}${timestamp}${secret}`;
 
     const computed = crypto
-        .createHmac('sha256', secret)
+        .createHash('sha256')
         .update(chain)
         .digest('hex');
 
-    const a = Buffer.from(signature);
-    const b = Buffer.from(computed);
+    const provided = typeof signatureObj === 'string' ? signatureObj : signatureObj?.checksum;
 
-    if (a.length !== b.length) {
-        return false;
-    }
+    if (!provided) return false;
 
-    return crypto.timingSafeEqual(a, b);
+    return provided === computed;
 }
 
 /**
