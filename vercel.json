@@ -4,14 +4,25 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/wp-json/:path*",
+      "destination": "http://69.6.233.229/wp-json/:path*"
+    },
+    {
+      "source": "/wp-admin/:path*",
+      "destination": "http://69.6.233.229/wp-admin/:path*"
+    },
+    {
+      "source": "/wp-login.php",
+      "destination": "http://69.6.233.229/wp-login.php"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ],
   "functions": {
     "api/**/*.ts": {
-      "runtime": "@vercel/node@3.x",
-      "maxDuration": 10
+      "runtime": "@vercel/node@3.x"
     }
   },
   "crons": [
