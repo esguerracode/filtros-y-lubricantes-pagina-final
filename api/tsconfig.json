@@ -1,20 +1,16 @@
 {
     "compilerOptions": {
         "target": "ES2022",
-        "module": "commonjs",
+        "module": "ESNext",
         "lib": [
             "ES2022"
         ],
-        "moduleResolution": "node",
+        "moduleResolution": "Node",
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
         "strict": false,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
-        "resolveJsonModule": true,
-        "isolatedModules": true,
-        "outDir": "../.vercel/output/functions",
-        "rootDir": ".",
         "types": [
             "node"
         ]

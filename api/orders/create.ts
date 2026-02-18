@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { corsHeaders, handleOptions, validateOrigin } from '../_utils/cors';
-import { getProduct, createOrder } from '../_utils/woo';
-import { generateIntegritySignature, copToCents } from '../_utils/wompi';
+import { corsHeaders, handleOptions, validateOrigin } from '../_utils/cors.js';
+import { getProduct, createOrder } from '../_utils/woo.js';
+import { generateIntegritySignature, copToCents } from '../_utils/wompi.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'OPTIONS') {
