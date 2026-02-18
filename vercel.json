@@ -20,11 +20,6 @@
       "destination": "/index.html"
     }
   ],
-  "functions": {
-    "api/**/*.ts": {
-      "runtime": "@vercel/node@3.x"
-    }
-  },
   "crons": [
     {
       "path": "/api/cron/cleanup",
