@@ -388,7 +388,7 @@ export const WompiPaymentForm: React.FC<WompiPaymentFormProps> = ({
                                 type="submit" disabled={loading}
                                 className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-3 hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-200 transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
                             >
-                                {loading ? 'Enviando...' : `Pagar $${amount.toLocaleString('es-CO')}`}
+                                {loading ? 'Enviando...' : `Pagar ${new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(amount)}`}
                             </button>
                         </div>
                     </form>

@@ -236,7 +236,7 @@ const Checkout: React.FC = () => {
 
                 {orderData && (
                   <WompiPaymentForm
-                    amount={Math.round(orderData.total * 100)}
+                    amount={parseFloat(orderData.total)}
                     orderReference={`WC-${orderData.id}`}
                     customerEmail={shipping.email}
                     onSuccess={handlePaymentSuccess}

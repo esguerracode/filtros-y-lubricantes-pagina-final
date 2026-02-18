@@ -1,28 +1,44 @@
-import { corsHeaders } from '../_utils/cors.js';
-import { generateIntegritySignature, copToCents } from '../_utils/wompi.js';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { corsHeaders } from '../_utils/cors';
+import { generateIntegritySignature, copToCents } from '../_utils/wompi';
 
-export default async function handler(req: any, res: any) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'OPTIONS') {
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
         res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-        return res.status(204).send();
+        return res.status(204).end();
     }
 
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { type, amount, reference, email, token, pseData, customerData, acceptance_token } = req.body;
+    const body = req.body as any;
+    const { type, amount, reference, email, token, acceptance_token } = body;
+    // PSE data can come as nested object or spread at top level from WompiPaymentForm
+    const pseData = body.pseData || body;
+    const customerData = body.customerData || body.customer_data;
 
     // Use Server Environment Variables
     const PRIVATE_KEY = process.env.WOMPI_PRIVATE_KEY;
-    const PUBLIC_KEY = process.env.VITE_WOMPI_PUBLIC_KEY; // Needed for acceptance token
+    const PUBLIC_KEY = process.env.VITE_WOMPI_PUBLIC_KEY;
     const INTEGRITY_SECRET = process.env.WOMPI_INTEGRITY_SECRET || process.env.WOMPI_EVENTS_SECRET;
 
+    // Set CORS for all responses
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
     if (!PRIVATE_KEY || !PUBLIC_KEY || !INTEGRITY_SECRET) {
-        console.error('❌ Missing Wompi Environment Variables');
-        return res.status(500).json({ error: 'Server configuration error' });
+        console.error('❌ Missing Wompi Environment Variables:', {
+            hasPrivateKey: !!PRIVATE_KEY,
+            hasPublicKey: !!PUBLIC_KEY,
+            hasIntegritySecret: !!INTEGRITY_SECRET,
+            envKeys: Object.keys(process.env).filter(k => k.includes('WOMPI')).join(', ')
+        });
+        return res.status(500).json({
+            error: 'Server configuration error - Wompi keys missing',
+            details: `Missing: ${!PRIVATE_KEY ? 'WOMPI_PRIVATE_KEY ' : ''}${!PUBLIC_KEY ? 'VITE_WOMPI_PUBLIC_KEY ' : ''}${!INTEGRITY_SECRET ? 'WOMPI_INTEGRITY_SECRET ' : ''}`
+        });
     }
 
     try {
@@ -32,7 +48,7 @@ export default async function handler(req: any, res: any) {
         if (!finalAcceptanceToken) {
             console.log('⚠️ No acceptance_token provided by client, fetching from Wompi...');
             const merchantResponse = await fetch(`https://production.wompi.co/v1/merchants/${PUBLIC_KEY}`);
-            const merchantData = await merchantResponse.json();
+            const merchantData = await merchantResponse.json() as any;
 
             if (!merchantData.data) {
                 throw new Error('Valid Merchant Public Key required');
@@ -74,15 +90,15 @@ export default async function handler(req: any, res: any) {
             payload.payment_method = {
                 type: 'CARD',
                 token: token,
-                installments: 1 // Default to 1 for now
+                installments: body.installments || 1
             };
         } else if (type === 'PSE') {
             payload.payment_method = {
                 type: 'PSE',
-                user_type: parseInt(pseData.user_type),
-                user_legal_id_type: pseData.user_legal_id_type,
-                user_legal_id: pseData.user_legal_id,
-                financial_institution_code: pseData.financial_institution_code,
+                user_type: parseInt(pseData.user_type || '0'),
+                user_legal_id_type: pseData.user_legal_id_type || 'CC',
+                user_legal_id: pseData.user_legal_id || '',
+                financial_institution_code: pseData.financial_institution_code || '',
                 payment_description: pseData.payment_description || `Pago Ref: ${reference}`
             };
         }
@@ -99,7 +115,7 @@ export default async function handler(req: any, res: any) {
             body: JSON.stringify(payload)
         });
 
-        const result = await response.json();
+        const result = await response.json() as any;
 
         if (result.error) {
             console.error('❌ Wompi Transaction Error:', result.error);

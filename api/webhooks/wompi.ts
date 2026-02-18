@@ -1,8 +1,9 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { kv } from '@vercel/kv';
-import { validateWompiSignature, copToCents, mapWompiStatus } from '../_utils/wompi.js';
-import { getOrderByReference, updateOrderWithRetry } from '../_utils/woo.js';
+import { validateWompiSignature, copToCents, mapWompiStatus } from '../_utils/wompi';
+import { getOrderByReference, updateOrderWithRetry } from '../_utils/woo';
 
-export default async function handler(req: any, res: any) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') {
         return res.status(405).send('Method Not Allowed');
     }

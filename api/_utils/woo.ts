@@ -5,9 +5,9 @@ let apiInstance: AxiosInstance | null = null;
 export function getApi(): AxiosInstance {
     if (apiInstance) return apiInstance;
 
-    const WC_URL = process.env.VITE_WP_URL; // Used in Vite
-    const CK = process.env.WC_CONSUMER_KEY; // Used in Node (API)
-    const CS = process.env.WC_CONSUMER_SECRET; // Used in Node (API)
+    const WC_URL = process.env.VITE_WP_URL || process.env.WP_URL;
+    const CK = process.env.WC_CONSUMER_KEY || process.env.VITE_WC_CONSUMER_KEY;
+    const CS = process.env.WC_CONSUMER_SECRET || process.env.VITE_WC_CONSUMER_SECRET;
 
     if (!WC_URL || !CK || !CS) {
         // Enforce check

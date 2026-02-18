@@ -1,13 +1,14 @@
-import { corsHeaders, handleOptions, validateOrigin } from '../_utils/cors.js';
-import { getProduct, createOrder } from '../_utils/woo.js';
-import { generateIntegritySignature, copToCents } from '../_utils/wompi.js';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { corsHeaders, handleOptions, validateOrigin } from '../_utils/cors';
+import { getProduct, createOrder } from '../_utils/woo';
+import { generateIntegritySignature, copToCents } from '../_utils/wompi';
 
-export default async function handler(req: any, res: any) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'OPTIONS') {
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
         res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-signature');
-        return res.status(204).send();
+        return res.status(204).end();
     }
 
     // Strict Origin Check (Log only for now to unblock prod)

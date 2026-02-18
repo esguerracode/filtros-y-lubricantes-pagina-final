@@ -1,11 +1,12 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import axios from 'axios';
-import { updateOrder } from '../_utils/woo.js';
+import { updateOrder } from '../_utils/woo';
 
 const WC_URL = process.env.VITE_WP_URL;
 const CK = process.env.WC_CONSUMER_KEY;
 const CS = process.env.WC_CONSUMER_SECRET;
 
-export default async function handler(req: any, res: any) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 1. Secure Cron Execution
     const authHeader = req.headers.authorization;
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
