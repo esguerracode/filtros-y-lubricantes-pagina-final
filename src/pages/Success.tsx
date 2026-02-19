@@ -4,6 +4,7 @@ import { useCart } from '../components/CartContext';
 import { CONTACT_INFO } from '../constants';
 import { CheckCircle, MessageCircle, Home, Download, Mail, Package, XCircle, Clock } from 'lucide-react';
 import { downloadInvoice, type InvoiceData } from '../services/invoiceService';
+import { trackPurchase } from '../utils/analytics';
 
 const BANK_ACCOUNTS = [
   { bank: 'Banco de Bogotá', type: 'Cuenta Corriente', number: '804-185-643' },
@@ -82,9 +83,17 @@ ${isWompiPayment ? '_Pago confirmado por Wompi_' : '_Solicito información para 
     window.open(whatsappUrl, '_blank');
   };
 
+
+
+  // ... existing code ...
+
   useEffect(() => {
     if (cart.length === 0 && !orderRef) {
       navigate('/');
+    } else if (orderRef && cart.length > 0) {
+      // Analytics: Purchase
+      // Only fire if we have items (valid purchase session)
+      trackPurchase(orderRef, totalPrice, 'COP');
     }
   }, []);
 
@@ -227,8 +236,8 @@ ${isWompiPayment ? '_Pago confirmado por Wompi_' : '_Solicito información para 
 
       {/* Info Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div className="bg-blue-50 p-6 rounded-2xl text-center">
-          <Mail className="w-10 h-10 text-blue-600 mx-auto mb-3" />
+        <div className="bg-emerald-50 p-6 rounded-2xl text-center">
+          <Mail className="w-10 h-10 text-emerald-600 mx-auto mb-3" />
           <p className="text-sm font-black text-gray-900">Email Enviado</p>
           <p className="text-xs text-gray-600 mt-1">
             Confirmación a tu correo

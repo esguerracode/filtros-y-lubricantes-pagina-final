@@ -10,6 +10,41 @@
 
 ---
 
+## 🏗️ Arquitectura y Seguridad
+
+### Flujo de Pagos Seguro
+1. **Frontend**: El usuario inicia el pago -> Se crea la orden en WooCommerce (`PENDING`).
+2. **Wompi**: El usuario paga en el widget seguro.
+3. **Webhook**: Wompi notifica a nuestro backend (`api/webhooks/wompi.ts`).
+4. **Validación**:
+   - **Firma Criptográfica**: Se verifica que la notificación venga realmente de Wompi usando `WOMPI_EVENTS_SECRET`.
+   - **Idempotencia**: Se usa Vercel KV para evitar procesar el mismo pago dos veces.
+   - **Monto**: Se valida estricta igualdad entre lo pagado y el total de la orden.
+5. **Actualización**: Si todo es correcto, la orden pasa a `PROCESSING` o `COMPLETED`.
+
+### Variables de Entorno Críticas
+Además de las claves públicas/privadas, es **OBLIGATORIO** configurar:
+
+```bash
+WOMPI_EVENTS_SECRET=wh_secret_XXXXXXXX  # Obtener en Dashboard -> Developers -> Secrets
+WOMPI_TEST_MODE=false                   # true para Sandbox, false para Producción
+KV_URL=redis://...                      # Para control de duplicados
+KV_REST_API_URL=...
+KV_REST_API_TOKEN=...
+```
+
+---
+
+## 🚨 Recuperación de Fallos
+
+Si un webhook falla (ej: WooCommerce caído), el sistema:
+1. Retorna error 500 a Wompi.
+2. Wompi reintenta automáticamente (hasta 4 veces).
+3. Si persiste, revisar logs en Vercel -> Functions.
+4. **Recuperación Manual**: Usar el script `scripts/simulate_webhook.ts` con los datos de la transacción fallida.
+
+---
+
 ## ✅ Ventajas de Wompi
 
 | Aspecto | Wompi | PayU |

@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Products from './pages/Products';
@@ -15,12 +16,34 @@ import MobileActionBar from './components/MobileActionBar';
 import ScrollToTop from './components/ScrollToTop';
 import { CartProvider } from './components/CartContext';
 
+
 function App() {
+  // Detector de versión para manejar propagación DNS
+  useEffect(() => {
+    const SITE_VERSION = 'vercel-wompi-inline-v2.0';
+    const storedVersion = sessionStorage.getItem('site_version');
+
+    // Si la versión no coincide, estamos probablemente viendo una versión cacheada o del servidor viejo
+    if (storedVersion && storedVersion !== SITE_VERSION) {
+      console.warn('⚠️ Versión desactualizada detectada. Forzando recarga del sitio...');
+      sessionStorage.setItem('site_version', SITE_VERSION);
+      // Solo recargar si realmente hay un cambio previo guardado
+      if (storedVersion) {
+        window.location.reload();
+      }
+    } else {
+      sessionStorage.setItem('site_version', SITE_VERSION);
+    }
+
+    console.log('✅ Versión del sitio activa:', SITE_VERSION);
+  }, []);
+
   return (
     <CartProvider>
       <Router>
         <ScrollToTop />
         <div className="min-h-screen bg-white flex flex-col">
+
           <Navbar />
 
           <main className="flex-grow">

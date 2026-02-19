@@ -1,31 +1,29 @@
 {
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/images/(.*)",
-      "destination": "/images/$1"
+      "source": "/wp-json/:path*",
+      "destination": "http://69.6.233.229/wp-json/:path*"
     },
     {
-      "source": "/(.*)",
+      "source": "/wp-admin/:path*",
+      "destination": "http://69.6.233.229/wp-admin/:path*"
+    },
+    {
+      "source": "/wp-login.php",
+      "destination": "http://69.6.233.229/wp-login.php"
+    },
+    {
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ],
-  "headers": [
+  "crons": [
     {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        }
-      ]
+      "path": "/api/cron/cleanup",
+      "schedule": "0 0 * * *"
     }
   ]
 }

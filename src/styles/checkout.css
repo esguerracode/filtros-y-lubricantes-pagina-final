@@ -1,0 +1,228 @@
+/* ========================================
+   CHECKOUT PAGE GENERAL
+   ======================================== */
+.checkout-page {
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  background: #f9fafb;
+}
+
+.checkout-form-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* ========================================
+   PAYMENT SECTION (Inline Widget)
+   ======================================== */
+.payment-section {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+/* Order Summary (Sidebar) */
+.order-summary {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 2rem;
+}
+
+.order-summary h2 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: #111827;
+}
+
+.order-details {
+  padding: 1rem 0;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 1rem;
+}
+
+.order-details p {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.security-badges {
+  margin: 1rem 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.security-badges p {
+  margin: 0.5rem 0;
+}
+
+/* Payment Widget Wrapper */
+.payment-widget-wrapper {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.payment-widget-wrapper h2 {
+  padding: 1.5rem;
+  margin: 0;
+  background: #f9fafb;
+  border-bottom: 2px solid #10b981;
+  font-size: 1.25rem;
+  color: #111827;
+}
+
+/* Wompi Inline Widget Container */
+.wompi-inline-widget {
+  padding: 1.5rem;
+  min-height: 550px;
+}
+
+.wompi-inline-widget iframe {
+  width: 100% !important;
+  min-height: 550px !important;
+  border: none !important;
+  display: block;
+}
+
+/* Loading State */
+.payment-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #10b981;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.payment-loading p {
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+/* Buttons */
+.btn-primary,
+.btn-secondary {
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.btn-primary {
+  background: #10b981;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-primary:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: white;
+  color: #6b7280;
+  border: 2px solid #e5e7eb;
+  margin-top: 1rem;
+}
+
+.btn-secondary:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+@media (max-width: 1024px) {
+  .payment-section {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .order-summary {
+    position: static;
+    order: 2;
+  }
+  
+  .payment-widget-wrapper {
+    order: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .checkout-page {
+    padding: 1rem 0.5rem;
+  }
+  
+  .checkout-form-container,
+  .payment-widget-wrapper {
+    padding: 1rem;
+    border-radius: 8px;
+  }
+  
+  .payment-widget-wrapper h2 {
+    padding: 1rem;
+    font-size: 1.1rem;
+  }
+  
+  .wompi-inline-widget {
+    padding: 1rem;
+    min-height: 600px;
+  }
+  
+  .wompi-inline-widget iframe {
+    min-height: 600px !important;
+  }
+  
+  .order-summary {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .wompi-inline-widget {
+    padding: 0.5rem;
+  }
+  
+  .wompi-inline-widget iframe {
+    min-height: 650px !important;
+  }
+}

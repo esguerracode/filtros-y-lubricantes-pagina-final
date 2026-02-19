@@ -18,8 +18,13 @@ const Products: React.FC = () => {
   };
 
   const categories = useMemo(() => {
+<<<<<<< HEAD
     const availableCategories = new Set(allProducts.map(p => p.category));
     return ['Todos', ...Object.values(Category).filter(c => availableCategories.has(c))] as (Category | 'Todos')[];
+=======
+    const activeCategories = new Set(allProducts.map(p => p.category));
+    return ['Todos', ...Object.values(Category).filter(cat => activeCategories.has(cat))];
+>>>>>>> d9c7ce464f1b20607d52afd9393e22a7d1f8b77c
   }, [allProducts]);
 
   const promoMessages = [
@@ -137,7 +142,7 @@ const Products: React.FC = () => {
                 {categories.map(cat => (
                   <button
                     key={cat}
-                    onClick={() => handleCategoryChange(cat)}
+                    onClick={() => handleCategoryChange(cat as Category | 'Todos')}
                     className={`text-left px-6 py-3.5 rounded-2xl text-xs font-[1000] uppercase tracking-wider transition-all border-2 ${selectedCategory === cat
                       ? 'bg-emerald-600 border-emerald-600 text-white shadow-xl shadow-emerald-600/20 scale-[1.02]'
                       : 'bg-white border-transparent text-gray-400 hover:border-gray-100 hover:bg-gray-50'

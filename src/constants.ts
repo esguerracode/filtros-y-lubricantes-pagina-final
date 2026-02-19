@@ -297,7 +297,7 @@ export const PRODUCTS: Product[] = [
     price: 110000,
     category: Category.FILTROS,
     description: 'Filtro de aire acondicionado original Ford MB3Z19N619C para Ranger 2025-2026.',
-    image: '/images/products/133.png'
+    image: '/images/products/ford_cabin_filter_clean_1771120129761.png'
   },
   {
     id: 110,
@@ -305,6 +305,6 @@ export const PRODUCTS: Product[] = [
     price: 55000,
     category: Category.LUBRICANTES,
     description: 'Aceite Motorcraft 5W30 Full Sintético. Presentación: Cuarto de galón.',
-    image: '/images/products/110.png'
+    image: '/images/products/clean_motorcraft_5w30_quart_1771120162232.png'
   }
 ];

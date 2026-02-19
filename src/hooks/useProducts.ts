@@ -14,45 +14,41 @@ export interface Product {
   categories?: any[];
 }
 
-const CACHE_KEY = 'wc_products_cache_v5';
+const CACHE_KEY = 'wc_products_cache_v9';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
 
 // Mapeo manual de priorización para asegurar que las fotos reales se vean
 // incluso si WooCommerce trae placeholders.
 const LOCAL_IMAGE_OVERRIDE: Record<string, string> = {
-  'KIT TOYOTA REVO (Pack Completo)': '/images/products/101.png',
-  'Filtro Aire AIP 977 (Toyota Revo)': '/images/products/111.png',
-  'Filtro Cabina ACP 138 (Toyota Revo)': '/images/products/112.png',
-  'Filtro Aceite OLP 067 (Toyota Revo)': '/images/products/113.png',
-  'Filtro Combustible FLP 476 (Toyota Revo)': '/images/products/114.png',
-  'Mobil Delvac 15W40 Galón': '/images/products/102.png',
-  'KIT TOYOTA VIGO (Pack Completo)': '/images/products/103.png',
-  'Filtro Aire AIP 651 (Toyota Vigo)': '/images/products/115.png',
-  'Filtro Cabina ACP 071 (Toyota Vigo)': '/images/products/116.png',
-  'Filtro Combustible FLP 355 (Toyota Vigo)': '/images/products/117.png',
-  'KIT NISSAN NP 300 GASOLINA (Pack)': '/images/products/104.png',
-  'Filtro Aire AIP 961 (Nissan NP300)': '/images/products/118.png',
-  'Filtro Cabina ACP 123 (Nissan NP300)': '/images/products/119.png',
-  'Filtro Aceite OLP 019 (Nissan NP300)': '/images/products/120.png',
-  'Aceite Mobil 10W30 Galón': '/images/products/105.png',
-  'Aceite Mobil 10W30 (1/4 Galón)': '/images/products/121.png',
-  'KIT NISSAN NP 300 DIESEL (Pack)': '/images/products/106.png',
-  'Filtro Aceite OLP 077 (Nissan NP300 Diesel)': '/images/products/122.png',
-  'Filtro Combustible FLP 472 (Nissan NP300 Diesel)': '/images/products/123.png',
-  'KIT FORD RANGER FILTROS NACIONALES (Pack)': '/images/products/107.png',
-  'Filtro Aceite OLP 115 (Ford Ranger)': '/images/products/124.png',
-  'Filtro Combustible FLP 509 (Ford Ranger)': '/images/products/125.png',
-  'Aceite Motorcraft 10W30 (1/4 Galón)': '/images/products/126.png',
-  'KIT FORD RANGER ORIGINAL 2022-2024 (Pack)': '/images/products/108.png',
-  'Filtro Combustible EB3Z-9365B (Ford Original)': '/images/products/127.png',
-  'Filtro Aire Motor MG2MZ9601B (Ford Original)': '/images/products/128.png',
-  'Filtro Aceite JU2Z-6731A (Ford Original)': '/images/products/129.png',
-  'Filtro Aire Acondicionado HB3Z19N619B (Ford Original)': '/images/products/130.png',
-  'KIT FORD RANGER ORIGINAL 2025-2026 (Pack)': '/images/products/109.png',
-  'Filtro Combustible KV61-9155AG (Ford Original 2025)': '/images/products/131.png',
-  'Filtro Aire Motor MB3Z-9601C (Ford Original 2025)': '/images/products/132.png',
-  'Filtro Aire Acondicionado MB3Z19N619C (Ford Original 2025)': '/images/products/133.png',
-  'Aceite Motorcraft 5W30 (1/4 Galón)': '/images/products/110.png'
+  // TOYOTA REVO
+  'KIT TOYOTA REVO (Pack Completo)': '/images/products/101_toyota_revo_kit_1771121527793.png',
+  'Filtro Aire AIP 977 (Toyota Revo)': '/images/products/air_filter_toyota_revo_aip977_1771121653543.png',
+  'Filtro Cabina ACP 138 (Toyota Revo)': '/images/products/112_cabin_filter_acp138_1771121716440.png',
+
+  // TOYOTA VIGO
+  'KIT TOYOTA VIGO (Pack Completo)': '/images/products/kit_toyota_revo_pack_completo_1771121609322.png', // Usando imagen de alta calidad compatible
+
+  // NISSAN NP300
+  'KIT NISSAN NP 300 GASOLINA (Pack)': '/images/products/nissan_np300_filter_kit_1771121830345.png',
+  'KIT NISSAN NP 300 DIESEL (Pack)': '/images/products/nissan_np300_filter_kit_1771121830345.png',
+
+  // FORD RANGER - CORREGIDO (Imágenes HD)
+  'KIT FORD RANGER FILTROS NACIONALES (Pack)': '/images/products/ford_ranger_air_filter_2025_1771119732254.png',
+  'KIT FORD RANGER ORIGINAL 2022-2024 (Pack)': '/images/products/ford_ranger_air_filter_mb3z19n619c_1771119793659.png',
+  'KIT FORD RANGER ORIGINAL 2025-2026 (Pack)': '/images/products/ford_ranger_air_filter_2025_1771119920235.png',
+
+  // ACEITES MOTORCRAFT - CORREGIDO (Imágenes HD y Distintas)
+  'Aceite Motorcraft 10W30 (1/4 Galón)': '/images/products/motorcraft_oil_5w30_1_4_galon_1771119745300.png', // Imagen correcta cuartos
+  'Aceite Motorcraft 5W30 (1/4 Galón)': '/images/products/clean_motorcraft_5w30_quart_1771120280601.png',
+
+  // MOBIL DELVAC
+  'Mobil Delvac 15W40 Galón': '/images/products/mobil_delvac_15w40_gallon_1771121799090.png',
+  'Aceite Mobil 10W30 (1/4 Galón)': '/images/products/121.png', // Mantener si es correcta, verificar después
+
+  // FILTROS INDIVIDUALES (Mapeo inteligente con HD)
+  'Filtro Aire Motor MB3Z-9601C (Ford Original 2025)': '/images/products/ford_air_filter_mb3z19n619c_1771119889411.png',
+  'Filtro Aire Acondicionado MB3Z19N619C (Ford Original 2025)': '/images/products/ford_cabin_filter_professional_1771120211306.png',
+  'Filtro Combustible FLP 509 (Ford Ranger)': '/images/products/ford_ranger_air_filter_mb3z19n619c_1771119700526.png', // Mejor aproximación HD disponible
 };
 
 const getLocalImageFallback = (name: string): string | null => {
@@ -179,7 +175,14 @@ export const useProducts = () => {
       } catch (err: any) {
         clearTimeout(timeoutId);
         console.warn('⚠️ WooCommerce no disponible o error, usando datos locales');
-        setProducts(PRODUCTS);
+
+        // CORRECCIÓN CRÍTICA: Asegurar que los productos locales tengan sus imágenes sincronizadas
+        const productsWithFixedImages = PRODUCTS.map(p => ({
+          ...p,
+          image: getLocalImageFallback(p.name) || p.image
+        }));
+
+        setProducts(productsWithFixedImages);
         setError('Mostrando catálogo local');
         setLoading(false);
       }

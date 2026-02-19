@@ -1,0 +1,11 @@
+node_modules
+dist
+.vercel
+.git
+.env*
+! .env.production
+testing
+tests
+scripts
+docs
+*.md
