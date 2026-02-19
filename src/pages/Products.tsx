@@ -17,7 +17,10 @@ const Products: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const categories: (Category | 'Todos')[] = ['Todos', ...Object.values(Category)];
+  const categories = useMemo(() => {
+    const availableCategories = new Set(allProducts.map(p => p.category));
+    return ['Todos', ...Object.values(Category).filter(c => availableCategories.has(c))] as (Category | 'Todos')[];
+  }, [allProducts]);
 
   const promoMessages = [
     { text: "Logística Prioritaria: Despachos a Puerto Gaitán en < 24h", icon: <Zap size={14} className="text-brand-yellow" /> },

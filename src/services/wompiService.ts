@@ -215,30 +215,57 @@ export const centsToCop = (cents: number): number => {
 /**
  * Prepara los datos de la transacción para Wompi
  */
-export const prepareWompiTransaction = (
+/**
+ * Crea la orden en el backend y prepara los datos para Wompi
+ * REEMPLAZA a prepareWompiTransaction (que era sincrono local)
+ */
+export const createOrderAndGetWompiData = async (
     cart: any[],
-    total: number,
     customerData: WompiCustomer,
     shippingAddress: WompiShippingAddress
-): WompiTransactionData => {
-    const reference = generateReference();
-    const amountInCents = copToCents(total);
+): Promise<WompiTransactionData> => {
 
+    // 1. Llamar a nuestra propia API para crear la orden segura y obtener firma
+    const response = await fetch('/api/orders/create', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            items: cart,
+            customer: {
+                ...customerData,
+                city: shippingAddress.city // Ensure city is passed for Telegram
+            }
+        })
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error creando orden: ${errorText}`);
+    }
+
+    const orderData = await response.json();
+    // orderData: { id, total, currency, reference, key, signature, amountInCents }
+
+    // 2. Retornar objeto listo para openWompiWidget
     return {
-        amountInCents,
-        currency: WOMPI_CONFIG.currency,
+        amountInCents: orderData.amountInCents,
+        currency: orderData.currency,
         customerEmail: customerData.email,
-        reference,
+        reference: orderData.reference, // La referencia generada por el backend
         publicKey: WOMPI_CONFIG.publicKey,
         redirectUrl: WOMPI_CONFIG.redirectUrl,
         customerData,
-        shippingAddress
+        shippingAddress,
+        signature: orderData.signature // IMPORTANT: Wompi widget needs this if integrity is enabled
     };
 };
 
+
 /**
- * Abrir widget de Wompi (método alternativo - puede fallar en localhost con claves de producción)
- * @deprecated Usar generateWompiPaymentLink para mayor confiabilidad
+ * Abrir widget de Wompi
+ * Abre el modal de pagos oficial de Wompi
  */
 export const openWompiWidget = (transactionData: WompiTransactionData) => {
     // Script ya está pre-cargado en index.html
@@ -259,6 +286,18 @@ export const openWompiWidget = (transactionData: WompiTransactionData) => {
             // redirectUrl es opcional pero recomendado
             if (transactionData.redirectUrl) {
                 widgetConfig.redirectUrl = transactionData.redirectUrl;
+            }
+
+            // Customer Data (Optional for Widget but good for pre-filling)
+            if (transactionData.customerData?.email) {
+                widgetConfig.customerData = {
+                    email: transactionData.customerData.email,
+                    fullName: transactionData.customerData.fullName,
+                    phoneNumber: transactionData.customerData.phoneNumber,
+                    phoneNumberPrefix: transactionData.customerData.phoneNumberPrefix,
+                    legalId: transactionData.customerData.legalId,
+                    legalIdType: transactionData.customerData.legalIdType
+                };
             }
 
             console.log('🔹 Wompi Widget Config:', JSON.stringify(widgetConfig, null, 2));

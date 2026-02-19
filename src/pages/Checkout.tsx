@@ -3,8 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../components/CartContext';
 import { ArrowLeft, Send, MapPin, User, Phone, Check, ShieldCheck, Lock, AlertCircle, Truck, Sparkles } from 'lucide-react';
-import { generateWompiPaymentLink, prepareWompiTransaction } from '../services/wompiService';
-import { preparePayUPayload, PAYU_CHECKOUT_URL } from '../services/payuService';
+import { generateWompiPaymentLink, createOrderAndGetWompiData } from '../services/wompiService';
 import type { WompiCustomer, WompiShippingAddress } from '../services/wompiService';
 import ValidatedInput from '../components/ValidatedInput';
 
@@ -12,7 +11,7 @@ const Checkout: React.FC = () => {
   const { cart, totalPrice, totalItems } = useCart();
   const navigate = useNavigate();
 
-  const [paymentMethod, setPaymentMethod] = useState<'wompi' | 'payu'>('wompi');
+  // const [paymentMethod, setPaymentMethod] = useState<'wompi' | 'payu'>('wompi');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // State con persistencia desde localStorage
@@ -67,23 +66,23 @@ const Checkout: React.FC = () => {
     setErrors(newErrors);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (Object.keys(errors).length > 0) return;
     setIsSubmitting(true);
 
-    // Guardar datos de envío localmente para recuperar en success page
-    localStorage.setItem('last_shipping', JSON.stringify(shippingData));
+    try {
+      // Guardar datos de envío localmente para recuperar en success page
+      localStorage.setItem('last_shipping', JSON.stringify(shippingData));
 
-    // Preparar ciudad y departamento limpios
-    const cleanCity = shippingData.ciudad.replace(/[.,]/g, '').trim();
-    const cityParts = shippingData.ciudad.split(',');
-    const department = cityParts.length > 1
-      ? cityParts[1].replace(/[.,]/g, '').trim()
-      : cleanCity;
+      // Preparar ciudad y departamento limpios
+      const cleanCity = shippingData.ciudad.replace(/[.,]/g, '').trim();
+      const cityParts = shippingData.ciudad.split(',');
+      const department = cityParts.length > 1
+        ? cityParts[1].replace(/[.,]/g, '').trim()
+        : cleanCity;
 
-    // 1. FLUJO WOMPI
-    if (paymentMethod === 'wompi') {
+      // FLUJO WOMPI ÚNICO
       const customerData: WompiCustomer = {
         email: shippingData.email,
         fullName: shippingData.nombre,
@@ -98,44 +97,23 @@ const Checkout: React.FC = () => {
         country: 'CO'
       };
 
-      const transactionData = prepareWompiTransaction(
+      // NEW ASYNC FLOW
+      const transactionData = await createOrderAndGetWompiData(
         cart,
-        totalPrice,
         customerData,
         shippingAddress
       );
 
       localStorage.setItem('last_order_ref', transactionData.reference);
-      const paymentLink = generateWompiPaymentLink(transactionData);
-      window.location.href = paymentLink;
-    }
-    // 2. FLUJO PAYU
-    else {
-      const orderRef = `FYL-${Date.now()}`;
-      localStorage.setItem('last_order_ref', orderRef);
 
-      const payload = preparePayUPayload(
-        orderRef,
-        totalPrice,
-        `Compra en Filtros y Lubricantes - ${cart.length} productos`,
-        shippingData.email
-      );
+      // Usar el Widget directamente
+      const { openWompiWidget } = await import('../services/wompiService');
+      openWompiWidget(transactionData);
 
-      // Crear formulario oculto para PayU (requerido por su arquitectura WebCheckout)
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = PAYU_CHECKOUT_URL;
-
-      Object.entries(payload).forEach(([key, value]) => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = value as string;
-        form.appendChild(input);
-      });
-
-      document.body.appendChild(form);
-      form.submit();
+    } catch (error: any) {
+      console.error('Checkout Error:', error);
+      alert('Hubo un error al crear la orden. Por favor intenta nuevamente.');
+      setIsSubmitting(false);
     }
   };
 
@@ -291,53 +269,26 @@ const Checkout: React.FC = () => {
             {/* Selector de Método de Pago "Perfect Checkout" */}
             <div className="pt-8 border-t border-gray-100 space-y-6">
               <label className="flex items-center gap-2 text-[10px] font-black text-[#054a29] uppercase tracking-widest">
-                <Sparkles size={14} /> Selecciona tu Método de Pago
+                <Sparkles size={14} /> Método de Pago Seguro
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Wompi Option */}
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('wompi')}
-                  className={`relative p-6 rounded-3xl border-2 transition-all text-left flex flex-col gap-3 group active:scale-95 ${paymentMethod === 'wompi'
-                      ? 'border-[#054a29] bg-emerald-50/50'
-                      : 'border-gray-100 hover:border-emerald-200 bg-white'
-                    }`}
+              <div className="grid grid-cols-1 gap-4">
+                {/* Wompi Option (Default & Only) */}
+                <div
+                  className={`relative p-6 rounded-3xl border-2 text-left flex flex-col gap-3 group border-[#054a29] bg-emerald-50/50 cursor-default`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-black text-sm uppercase tracking-tight">Wompi / Bancolombia</span>
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'wompi' ? 'border-[#054a29] bg-[#054a29]' : 'border-gray-200'
-                      }`}>
-                      {paymentMethod === 'wompi' && <Check size={12} className="text-white" />}
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center border-[#054a29] bg-[#054a29]`}>
+                      <Check size={12} className="text-white" />
                     </div>
                   </div>
-                  <p className="text-[10px] font-bold text-gray-500 leading-relaxed">PSE, Nequi, Botón Bancolombia y Tarjetas.</p>
+                  <p className="text-[10px] font-bold text-gray-500 leading-relaxed">PSE, Nequi, Botón Bancolombia y Tarjetas Débito/Crédito.</p>
                   <div className="flex items-center gap-2 mt-auto grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all">
-                    <img src="https://wompi.co/wp-content/uploads/2021/08/logo-nequi.png" alt="Nequi" className="h-3" />
-                    <img src="https://wompi.co/wp-content/uploads/2021/08/logo-pse.png" alt="PSE" className="h-3" />
+                    <img src="https://wompi.co/wp-content/uploads/2021/08/logo-nequi.png" alt="Nequi" className="h-4" />
+                    <img src="https://wompi.co/wp-content/uploads/2021/08/logo-pse.png" alt="PSE" className="h-4" />
+                    <img src="https://brandslogos.com/wp-content/uploads/images/large/bancolombia-logo.png" alt="Bancolombia" className="h-4" />
                   </div>
-                </button>
-
-                {/* PayU Option */}
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('payu')}
-                  className={`relative p-6 rounded-3xl border-2 transition-all text-left flex flex-col gap-3 group active:scale-95 ${paymentMethod === 'payu'
-                      ? 'border-[#054a29] bg-emerald-50/50'
-                      : 'border-gray-100 hover:border-emerald-200 bg-white'
-                    }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-black text-sm uppercase tracking-tight">PayU Latam</span>
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'payu' ? 'border-[#054a29] bg-[#054a29]' : 'border-gray-200'
-                      }`}>
-                      {paymentMethod === 'payu' && <Check size={12} className="text-white" />}
-                    </div>
-                  </div>
-                  <p className="text-[10px] font-bold text-gray-500 leading-relaxed">Tarjetas internacionales y redes de recaudo (Efecty).</p>
-                  <div className="flex items-center gap-2 mt-auto grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all">
-                    <img src="https://www.payu.com.co/wp-content/uploads/2020/03/logo-payu.png" alt="PayU" className="h-3" />
-                  </div>
-                </button>
+                </div>
               </div>
             </div>
 
