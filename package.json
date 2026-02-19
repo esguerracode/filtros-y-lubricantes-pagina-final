@@ -30,14 +30,9 @@
     "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
-<<<<<<< HEAD
-    "@types/node": "^22.14.0",
-    "@vercel/node": "^5.6.5",
-=======
     "@types/jest": "^30.0.0",
     "@types/node": "^22.19.11",
-    "@vercel/node": "^5.6.4",
->>>>>>> d9c7ce464f1b20607d52afd9393e22a7d1f8b77c
+    "@vercel/node": "^5.6.5",
     "@vitejs/plugin-react": "^5.0.0",
     "jest": "^30.2.0",
     "jest-environment-jsdom": "^30.2.0",
