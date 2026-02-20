@@ -147,9 +147,18 @@ export const createOrderAndGetWompiData = async (
 // ============================================================
 
 export const openWompiWidget = (transactionData: WompiTransactionData) => {
+    console.log('🚀 openWompiWidget called with:', transactionData);
+
+    if (!transactionData.publicKey) {
+        alert('Error de configuración: Falta la llave pública de Wompi.');
+        console.error('❌ Missing WOMPI_PUBLIC_KEY');
+        return;
+    }
+
     const checkWidget = setInterval(() => {
         if ((window as any).WidgetCheckout) {
             clearInterval(checkWidget);
+            console.log('✅ Wompi Widget SDK found!');
 
             const widgetConfig: any = {
                 currency: transactionData.currency,
@@ -177,39 +186,44 @@ export const openWompiWidget = (transactionData: WompiTransactionData) => {
                 };
             }
 
-            console.log('🔹 Wompi Widget Config:', JSON.stringify(widgetConfig, null, 2));
+            console.log('🔹 Initializing Wompi with Config:', JSON.stringify(widgetConfig, null, 2));
 
-            const checkout = new (window as any).WidgetCheckout(widgetConfig);
+            try {
+                const checkout = new (window as any).WidgetCheckout(widgetConfig);
 
-            checkout.open((result: any) => {
-                if (!result || !result.transaction) {
-                    console.error('❌ No transaction data received from Wompi');
-                    return;
-                }
+                checkout.open((result: any) => {
+                    console.log('📩 Wompi Callback Result:', result);
+                    if (!result || !result.transaction) {
+                        console.error('❌ No transaction data received from Wompi callback');
+                        return;
+                    }
 
-                const transaction = result.transaction;
-                console.log('✅ Wompi transaction result:', transaction);
+                    const transaction = result.transaction;
+                    console.log('✅ Transaction Status:', transaction.status);
 
-                const redirectBase = transactionData.redirectUrl || window.location.origin + '/success';
+                    const redirectBase = transactionData.redirectUrl || window.location.origin + '/success';
+                    const redirectUrl = `${redirectBase}?status=${transaction.status.toLowerCase()}&reference=${transaction.reference}&id=${transaction.id}`;
 
-                if (transaction.status === 'APPROVED') {
-                    window.location.href = `${redirectBase}?status=approved&reference=${transaction.reference}&id=${transaction.id}`;
-                } else if (transaction.status === 'DECLINED') {
-                    window.location.href = `${redirectBase}?status=declined&reference=${transaction.reference}`;
-                } else {
-                    window.location.href = `${redirectBase}?status=pending&reference=${transaction.reference}`;
-                }
-            });
+                    console.log('↪️ Redirecting to:', redirectUrl);
+                    window.location.href = redirectUrl;
+                });
+            } catch (err) {
+                console.error('❌ Error initializing WidgetCheckout:', err);
+                alert('Error iniciando la pasarela de pagos. Por favor revisa la consola.');
+            }
+
+        } else {
+            console.log('⏳ Waiting for Wompi Widget SDK...');
         }
-    }, 100);
+    }, 500); // Check every 500ms
 
     setTimeout(() => {
         clearInterval(checkWidget);
         if (!(window as any).WidgetCheckout) {
-            alert('Error cargando pasarela de pago. Por favor recarga la página e intenta nuevamente.');
-            console.error('❌ Wompi widget failed to load after 10 seconds');
+            alert('Error: La pasarela de pagos Wompi no cargó después de 15 segundos. Por favor verifica tu conexión o bloqueadores de anuncios.');
+            console.error('❌ Wompi widget TIMEOUT');
         }
-    }, 10000);
+    }, 15000); // Wait 15s
 };
 
 // ============================================================

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../components/CartContext';
 import { ArrowLeft, Send, MapPin, User, Phone, Check, ShieldCheck, Lock, AlertCircle, Truck, Sparkles } from 'lucide-react';
-import { generateWompiPaymentLink, createOrderAndGetWompiData } from '../services/wompiService';
+import { generateWompiPaymentLink, createOrderAndGetWompiData, openWompiWidget } from '../services/wompiService';
 import type { WompiCustomer, WompiShippingAddress } from '../services/wompiService';
 import ValidatedInput from '../components/ValidatedInput';
 
@@ -107,7 +107,8 @@ const Checkout: React.FC = () => {
       localStorage.setItem('last_order_ref', transactionData.reference);
 
       // Usar el Widget directamente
-      const { openWompiWidget } = await import('../services/wompiService');
+      // const { openWompiWidget } = await import('../services/wompiService'); // Removed redundant dynamic import
+      console.log('🔹 Starting Wompi Widget flow with:', transactionData);
       openWompiWidget(transactionData);
 
     } catch (error: any) {
