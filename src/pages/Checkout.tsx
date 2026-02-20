@@ -1,30 +1,36 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../components/CartContext';
-import { ArrowLeft, Send, MapPin, User, Phone, Check, ShieldCheck, Lock, AlertCircle, Truck, Sparkles } from 'lucide-react';
+import { ArrowLeft, MapPin, User, Phone, Check, ShieldCheck, Lock, AlertCircle, Truck } from 'lucide-react';
 import { generateWompiPaymentLink, createOrderAndGetWompiData, openWompiWidget } from '../services/wompiService';
 import type { WompiCustomer, WompiShippingAddress } from '../services/wompiService';
-import ValidatedInput from '../components/ValidatedInput';
 
 const Checkout: React.FC = () => {
   const { cart, totalPrice, totalItems } = useCart();
   const navigate = useNavigate();
 
-  // const [paymentMethod, setPaymentMethod] = useState<'wompi' | 'payu'>('wompi');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // State con persistencia desde localStorage
   const [shippingData, setShippingData] = useState(() => {
     const saved = localStorage.getItem('checkout_draft');
-    return saved ? JSON.parse(saved) : {
+    const defaultData = {
       nombre: '',
+      apellido: '',
       email: '',
       telefono: '',
       ciudad: '',
       direccion: '',
       notas: ''
     };
+    if (!saved) return defaultData;
+    try {
+      const parsed = JSON.parse(saved);
+      // Ensure apellido exists if loading from old draft
+      return { ...defaultData, ...parsed };
+    } catch {
+      return defaultData;
+    }
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -42,18 +48,18 @@ const Checkout: React.FC = () => {
   const validateField = (name: string, value: string) => {
     const newErrors = { ...errors };
     if (name === 'telefono') {
-      const cleanPhone = value.replace(/\s/g, '');
-      if (cleanPhone && !/^[0-9]{10}$/.test(cleanPhone)) {
-        newErrors.telefono = 'Ingresa un número válido de 10 dígitos';
+      const cleanPhone = value.replace(/\D/g, '');
+      if (cleanPhone && cleanPhone.length !== 10) {
+        newErrors.telefono = 'El número de celular debe tener 10 dígitos';
       } else {
         delete newErrors.telefono;
       }
     }
-    if (name === 'nombre') {
-      if (value && value.length < 3) {
-        newErrors.nombre = 'El nombre es muy corto';
+    if (name === 'nombre' || name === 'apellido') {
+      if (value && value.trim().length < 2) {
+        newErrors[name] = 'Campo muy corto';
       } else {
-        delete newErrors.nombre;
+        delete newErrors[name];
       }
     }
     if (name === 'email') {
@@ -68,6 +74,15 @@ const Checkout: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Final phone number validation
+    const phone = shippingData.telefono.replace(/\D/g, '');
+    if (phone.length !== 10) {
+      setErrors(prev => ({ ...prev, telefono: 'El número de celular debe tener 10 dígitos' }));
+      alert('El número de celular debe tener 10 dígitos (Ej: 3001234567)');
+      return;
+    }
+
     if (Object.keys(errors).length > 0) return;
     setIsSubmitting(true);
 
@@ -82,11 +97,10 @@ const Checkout: React.FC = () => {
         ? cityParts[1].replace(/[.,]/g, '').trim()
         : cleanCity;
 
-      // FLUJO WOMPI ÚNICO
       const customerData: WompiCustomer = {
         email: shippingData.email,
-        fullName: shippingData.nombre,
-        phoneNumber: shippingData.telefono.replace(/\D/g, ''),
+        fullName: `${shippingData.nombre.trim()} ${shippingData.apellido.trim()}`,
+        phoneNumber: phone,
         phoneNumberPrefix: '+57'
       };
 
@@ -97,7 +111,6 @@ const Checkout: React.FC = () => {
         country: 'CO'
       };
 
-      // NEW ASYNC FLOW
       const transactionData = await createOrderAndGetWompiData(
         cart,
         customerData,
@@ -105,10 +118,6 @@ const Checkout: React.FC = () => {
       );
 
       localStorage.setItem('last_order_ref', transactionData.reference);
-
-      // Usar el Widget directamente
-      // const { openWompiWidget } = await import('../services/wompiService'); // Removed redundant dynamic import
-      console.log('🔹 Starting Wompi Widget flow with:', transactionData);
 
       // Generate and save manual link just in case
       const manualLink = generateWompiPaymentLink(transactionData);
@@ -127,7 +136,6 @@ const Checkout: React.FC = () => {
     }
   };
 
-
   return (
     <div className="pt-0 lg:pt-32 min-h-screen bg-gray-50/50 pb-32">
       <div className="max-w-3xl mx-auto px-4 py-8 md:py-12">
@@ -144,8 +152,7 @@ const Checkout: React.FC = () => {
               { label: 'Pago', content: '3', active: true, done: false }
             ].map((step, idx) => (
               <div key={idx} className="flex flex-col items-center relative z-10">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-500 ${step.active ? 'bg-[#054a29] text-white shadow-lg' : 'bg-white border-2 border-gray-200 text-gray-400'
-                  }`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-500 ${step.active ? 'bg-[#054a29] text-white shadow-lg' : 'bg-white border-2 border-gray-200 text-gray-400'}`}>
                   {step.done ? <Check size={20} /> : (step.content || idx + 1)}
                 </div>
                 <span className={`text-[10px] uppercase font-black mt-2 tracking-widest ${step.active ? 'text-[#054a29]' : 'text-gray-400'}`}>
@@ -163,7 +170,7 @@ const Checkout: React.FC = () => {
           <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Volver al Carrito
         </button>
 
-        <div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100">
+        <div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100 mb-12">
           <div className="bg-[#054a29] p-8 md:p-10 text-white relative overflow-hidden">
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-2">
@@ -182,14 +189,13 @@ const Checkout: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-3">
                 <label className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                  <User size={14} className="text-[#054a29]" /> Nombre Completo
+                  <User size={14} className="text-[#054a29]" /> Nombre
                 </label>
                 <input
                   required
                   type="text"
-                  placeholder="Ej: Juan Pérez"
-                  className={`w-full px-6 py-4 bg-gray-50/50 border rounded-2xl focus:ring-4 outline-none transition-all ${errors.nombre ? 'border-red-300 focus:ring-red-100' : 'border-gray-100 focus:ring-emerald-50 focus:border-emerald-200'
-                    }`}
+                  placeholder="Ej: Juan"
+                  className={`w-full px-6 py-4 bg-gray-50/50 border rounded-2xl focus:ring-4 outline-none transition-all ${errors.nombre ? 'border-red-300 focus:ring-red-100' : 'border-gray-100 focus:ring-emerald-50 focus:border-emerald-200'}`}
                   value={shippingData.nombre}
                   onChange={e => {
                     setShippingData({ ...shippingData, nombre: e.target.value });
@@ -200,18 +206,17 @@ const Checkout: React.FC = () => {
 
               <div className="space-y-3">
                 <label className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                  <User size={14} className="text-[#054a29]" /> Correo Electrónico
+                  <User size={14} className="text-[#054a29]" /> Apellido
                 </label>
                 <input
                   required
-                  type="email"
-                  placeholder="ejemplo@correo.com"
-                  className={`w-full px-6 py-4 bg-gray-50/50 border rounded-2xl focus:ring-4 outline-none transition-all ${errors.email ? 'border-red-300 focus:ring-red-100' : 'border-gray-100 focus:ring-emerald-50 focus:border-emerald-200'
-                    }`}
-                  value={shippingData.email}
+                  type="text"
+                  placeholder="Ej: Pérez"
+                  className={`w-full px-6 py-4 bg-gray-50/50 border rounded-2xl focus:ring-4 outline-none transition-all ${errors.apellido ? 'border-red-300 focus:ring-red-100' : 'border-gray-100 focus:ring-emerald-50 focus:border-emerald-200'}`}
+                  value={shippingData.apellido}
                   onChange={e => {
-                    setShippingData({ ...shippingData, email: e.target.value });
-                    validateField('email', e.target.value);
+                    setShippingData({ ...shippingData, apellido: e.target.value });
+                    validateField('apellido', e.target.value);
                   }}
                 />
               </div>
@@ -220,22 +225,43 @@ const Checkout: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-3">
                 <label className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                  <Phone size={14} className="text-[#054a29]" /> WhatsApp / Teléfono
+                  <User size={14} className="text-[#054a29]" /> Correo Electrónico
                 </label>
                 <input
                   required
-                  type="tel"
-                  placeholder="Ej: 314 000 0000"
-                  className={`w-full px-6 py-4 bg-gray-50/50 border rounded-2xl focus:ring-4 outline-none transition-all ${errors.telefono ? 'border-red-300 focus:ring-red-100' : 'border-gray-100 focus:ring-emerald-50 focus:border-emerald-200'
-                    }`}
-                  value={shippingData.telefono}
+                  type="email"
+                  placeholder="ejemplo@correo.com"
+                  className={`w-full px-6 py-4 bg-gray-50/50 border rounded-2xl focus:ring-4 outline-none transition-all ${errors.email ? 'border-red-300 focus:ring-red-100' : 'border-gray-100 focus:ring-emerald-50 focus:border-emerald-200'}`}
+                  value={shippingData.email}
                   onChange={e => {
-                    setShippingData({ ...shippingData, telefono: e.target.value });
-                    validateField('telefono', e.target.value);
+                    setShippingData({ ...shippingData, email: e.target.value });
+                    validateField('email', e.target.value);
                   }}
                 />
               </div>
 
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                  <Phone size={14} className="text-[#054a29]" /> WhatsApp / Celular
+                </label>
+                <input
+                  required
+                  type="tel"
+                  maxLength={10}
+                  placeholder="Ej: 3001234567"
+                  className={`w-full px-6 py-4 bg-gray-50/50 border rounded-2xl focus:ring-4 outline-none transition-all ${errors.telefono ? 'border-red-300 focus:ring-red-100' : 'border-gray-100 focus:ring-emerald-50 focus:border-emerald-200'}`}
+                  value={shippingData.telefono}
+                  onChange={e => {
+                    const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    setShippingData({ ...shippingData, telefono: val });
+                    validateField('telefono', val);
+                  }}
+                />
+                {errors.telefono && <p className="text-red-500 text-[10px] font-bold uppercase tracking-tighter mt-1">{errors.telefono}</p>}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-3">
                 <label className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">
                   <MapPin size={14} className="text-[#054a29]" /> Ciudad / Municipio
@@ -249,20 +275,20 @@ const Checkout: React.FC = () => {
                   onChange={e => setShippingData({ ...shippingData, ciudad: e.target.value })}
                 />
               </div>
-            </div>
 
-            <div className="space-y-3">
-              <label className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                <Truck size={14} className="text-[#054a29]" /> Dirección Exacta
-              </label>
-              <input
-                required
-                type="text"
-                placeholder="Ej: Calle 10 # 5-20, Barrio Centro"
-                className="w-full px-6 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-emerald-50 outline-none transition-all"
-                value={shippingData.direccion}
-                onChange={e => setShippingData({ ...shippingData, direccion: e.target.value })}
-              />
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                  <Truck size={14} className="text-[#054a29]" /> Dirección Exacta
+                </label>
+                <input
+                  required
+                  type="text"
+                  placeholder="Ej: Calle 10 # 5-20, Barrio Centro"
+                  className="w-full px-6 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-emerald-50 outline-none transition-all"
+                  value={shippingData.direccion}
+                  onChange={e => setShippingData({ ...shippingData, direccion: e.target.value })}
+                />
+              </div>
             </div>
 
             <div className="space-y-3">
@@ -290,10 +316,7 @@ const Checkout: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-1 gap-4">
-                {/* Wompi Option (Default & Only) */}
-                <div
-                  className={`relative p-6 rounded-2xl border-2 text-left flex flex-col gap-4 group border-[#054a29] bg-emerald-50/30 cursor-default transition-all shadow-sm hover:shadow-md`}
-                >
+                <div className="relative p-6 rounded-2xl border-2 text-left flex flex-col gap-4 group border-[#054a29] bg-emerald-50/30 cursor-default transition-all shadow-sm hover:shadow-md">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center p-1 shadow-sm border border-gray-100">
@@ -304,12 +327,11 @@ const Checkout: React.FC = () => {
                         <span className="text-xs text-gray-500 font-medium">Tarjetas, PSE, Nequi y Efectivo</span>
                       </div>
                     </div>
-                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center border-[#054a29] bg-[#054a29]`}>
+                    <div className="w-6 h-6 rounded-full border-2 flex items-center justify-center border-[#054a29] bg-[#054a29]">
                       <Check size={14} className="text-white" />
                     </div>
                   </div>
 
-                  {/* Trust Badges */}
                   <div className="flex items-center gap-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-white/50 p-2 rounded-lg">
                     <span className="flex items-center gap-1"><Lock size={10} /> Cifrado 256-bit</span>
                     <span className="w-px h-3 bg-gray-300"></span>
@@ -344,14 +366,12 @@ const Checkout: React.FC = () => {
                   disabled={Object.keys(errors).length > 0 || isSubmitting}
                   className="hidden md:flex w-full bg-[#8cc63f] text-[#054a29] py-5 px-8 rounded-2xl font-black text-lg uppercase tracking-widest hover:bg-[#7ab62f] hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-lime-200/50 items-center justify-center gap-3 disabled:opacity-70 disabled:grayscale disabled:cursor-not-allowed"
                 >
-                  {isSubmitting ? (
-                    <>Procesando...</>
-                  ) : (
+                  {isSubmitting ? 'Procesando...' : (
                     <>Pagar de forma segura <Lock size={20} /></>
                   )}
                 </button>
 
-                {/* Mobile Sticky Button - Moved inside form */}
+                {/* Mobile Sticky Button */}
                 <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 p-4 z-50 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
                   <button
                     type="submit"
@@ -367,7 +387,7 @@ const Checkout: React.FC = () => {
                 </div>
               </div>
 
-              {/* Manual Fallback Link - Styled nicely */}
+              {/* Manual Fallback Link */}
               <div id="wompi-fallback" className="hidden mt-6 bg-amber-50 border border-amber-100 p-4 rounded-xl text-center animate-fade-in-up">
                 <p className="text-amber-800 text-xs font-bold uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
                   <AlertCircle size={14} />
@@ -390,11 +410,8 @@ const Checkout: React.FC = () => {
             </div>
           </form>
 
-
-
-          {/* Trust Signals Section - Estilo E-commerce Colombiano */}
+          {/* Trust Signals Section */}
           <div className="px-8 md:px-12 pb-10">
-            {/* Security Badges */}
             <div className="flex flex-wrap items-center justify-center gap-4 mb-6 pb-6 border-b border-gray-100">
               <div className="flex items-center gap-2 text-gray-500">
                 <Lock size={16} className="text-emerald-600" />
@@ -410,38 +427,16 @@ const Checkout: React.FC = () => {
               </div>
             </div>
 
-            {/* Payment Methods Accepted */}
             <div className="space-y-3">
               <p className="text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">Métodos de Pago Aceptados</p>
               <div className="flex flex-wrap items-center justify-center gap-4 opacity-60 grayscale hover:grayscale-0 transition-all">
-                {/* Credit Cards */}
-                <svg className="h-8" viewBox="0 0 48 32" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="48" height="32" rx="4" fill="#1434CB" />
-                  <text x="24" y="20" fontSize="10" fontWeight="bold" fill="white" textAnchor="middle">VISA</text>
-                </svg>
-                <svg className="h-8" viewBox="0 0 48 32" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="48" height="32" rx="4" fill="#EB001B" />
-                  <circle cx="18" cy="16" r="10" fill="#EB001B" />
-                  <circle cx="30" cy="16" r="10" fill="#FF5F00" opacity="0.8" />
-                </svg>
-                <svg className="h-8" viewBox="0 0 48 32" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="48" height="32" rx="4" fill="#016FD0" />
-                  <text x="24" y="20" fontSize="8" fontWeight="bold" fill="white" textAnchor="middle">AMEX</text>
-                </svg>
-                {/* Colombian Methods */}
-                <svg className="h-8" viewBox="0 0 48 32" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="48" height="32" rx="4" fill="#00A859" />
-                  <text x="24" y="20" fontSize="8" fontWeight="bold" fill="white" textAnchor="middle">PSE</text>
-                </svg>
-                <svg className="h-8" viewBox="0 0 48 32" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="48" height="32" rx="4" fill="#FF6B00" />
-                  <text x="24" y="12" fontSize="6" fontWeight="bold" fill="white" textAnchor="middle">NEQUI</text>
-                  <text x="24" y="22" fontSize="5" fill="white" textAnchor="middle">Bancolombia</text>
-                </svg>
+                <img src="/assets/payments/nequi.png" alt="Nequi" className="h-6 w-auto" />
+                <img src="/assets/payments/pse.png" alt="PSE" className="h-6 w-auto" />
+                <img src="/assets/payments/bancolombia.png" alt="Bancolombia" className="h-6 w-auto" />
+                <img src="/assets/payments/wompi.png" alt="Wompi" className="h-6 w-auto" />
               </div>
             </div>
 
-            {/* Reassuring Copy */}
             <div className="mt-6 text-center space-y-2">
               <p className="text-xs text-gray-500 font-medium flex items-center justify-center gap-2">
                 <Lock size={14} className="text-emerald-600" />
