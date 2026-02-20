@@ -276,108 +276,117 @@ const Checkout: React.FC = () => {
               />
             </div>
 
-            {/* Selector de Método de Pago "Perfect Checkout" */}
+            {/* Selector de Método de Pago "High Trust" */}
             <div className="pt-8 border-t border-gray-100 space-y-6">
-              <label className="flex items-center gap-2 text-[10px] font-black text-[#054a29] uppercase tracking-widest">
-                <Sparkles size={14} /> Método de Pago Seguro
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 text-xs font-black text-[#054a29] uppercase tracking-widest">
+                  <ShieldCheck size={16} /> Pago Seguro SSL
+                </label>
+                <div className="flex gap-2 opacity-60 grayscale hover:grayscale-0 transition-all">
+                  <img src="/assets/payments/nequi.png" alt="Nequi" className="h-6 object-contain" />
+                  <img src="/assets/payments/pse.png" alt="PSE" className="h-6 object-contain" />
+                  <img src="/assets/payments/bancolombia.png" alt="Bancolombia" className="h-6 object-contain" />
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 gap-4">
                 {/* Wompi Option (Default & Only) */}
                 <div
-                  className={`relative p-6 rounded-3xl border-2 text-left flex flex-col gap-3 group border-[#054a29] bg-emerald-50/50 cursor-default`}
+                  className={`relative p-6 rounded-2xl border-2 text-left flex flex-col gap-4 group border-[#054a29] bg-emerald-50/30 cursor-default transition-all shadow-sm hover:shadow-md`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-black text-sm uppercase tracking-tight">Wompi / Bancolombia</span>
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center border-[#054a29] bg-[#054a29]`}>
-                      <Check size={12} className="text-white" />
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center p-1 shadow-sm border border-gray-100">
+                        <img src="/assets/payments/wompi.png" alt="Wompi Logo" className="w-full h-full object-contain" />
+                      </div>
+                      <div>
+                        <span className="font-bold text-gray-900 block">Wompi Bancolombia</span>
+                        <span className="text-xs text-gray-500 font-medium">Tarjetas, PSE, Nequi y Efectivo</span>
+                      </div>
+                    </div>
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center border-[#054a29] bg-[#054a29]`}>
+                      <Check size={14} className="text-white" />
                     </div>
                   </div>
-                  <p className="text-[10px] font-bold text-gray-500 leading-relaxed">PSE, Nequi, Botón Bancolombia y Tarjetas Débito/Crédito.</p>
-                  <div className="flex items-center gap-2 mt-auto grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all">
-                    <img src="https://wompi.co/wp-content/uploads/2021/08/logo-nequi.png" alt="Nequi" className="h-4" />
-                    <img src="https://wompi.co/wp-content/uploads/2021/08/logo-pse.png" alt="PSE" className="h-4" />
-                    <img src="https://brandslogos.com/wp-content/uploads/images/large/bancolombia-logo.png" alt="Bancolombia" className="h-4" />
+
+                  {/* Trust Badges */}
+                  <div className="flex items-center gap-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-white/50 p-2 rounded-lg">
+                    <span className="flex items-center gap-1"><Lock size={10} /> Cifrado 256-bit</span>
+                    <span className="w-px h-3 bg-gray-300"></span>
+                    <span className="flex items-center gap-1"><ShieldCheck size={10} /> PCI DSS Certified</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="pt-8 border-t border-gray-100">
-              {/* Desglose de Costos - Transparencia Total */}
-              <div className="space-y-3 mb-8">
-                {/* Subtotal */}
-                <div className="flex justify-between items-center text-sm text-gray-600">
+            {/* Order Summary styled as a receipt */}
+            <div className="pt-6 border-t border-gray-100">
+              <div className="bg-gray-50 p-4 rounded-xl space-y-2 text-sm text-gray-600 mb-6">
+                <div className="flex justify-between">
                   <span>Subtotal ({totalItems} {totalItems === 1 ? 'producto' : 'productos'})</span>
-                  <span className="font-bold">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(totalPrice)}</span>
+                  <span className="font-medium">${totalPrice.toLocaleString('es-CO')}</span>
                 </div>
-
-                {/* Envío Gratis */}
-                <div className="flex justify-between items-center text-emerald-600">
-                  <span className="flex items-center gap-2 text-sm">
-                    <Truck size={16} />
-                    Envío Nacional
-                  </span>
-                  <span className="font-black text-base">GRATIS</span>
-                </div>
-
-                {/* IVA */}
-                <div className="flex justify-between items-center text-xs text-gray-500">
-                  <span>IVA</span>
-                  <span>Incluido</span>
-                </div>
-
-                {/* Separator */}
-                <div className="h-px bg-gray-200 my-4"></div>
-
-                {/* Total */}
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600 text-sm font-black uppercase tracking-wide">Total a Pagar</span>
-                  <span className="text-4xl font-black text-[#054a29] tracking-tighter">
-                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(totalPrice)}
-                  </span>
-                </div>
-
-                {/* Trust Badge */}
-                <div className="bg-emerald-50 rounded-2xl p-4 flex items-center gap-3 border border-emerald-100">
-                  <ShieldCheck size={20} className="text-emerald-600" />
-                  <span className="text-sm text-emerald-800 font-semibold">Pago 100% seguro con Wompi (PCI DSS Level 1)</span>
+                <div className="flex justify-between text-[#054a29]">
+                  <span className="flex items-center gap-1"><Truck size={14} /> Envío</span>
+                  <span className="font-bold">GRATIS</span>
                 </div>
               </div>
 
-              {/* Desktop Button */}
+              <div className="flex items-end justify-between mb-6">
+                <span className="text-sm font-bold text-gray-400 uppercase tracking-widest">Total a Pagar</span>
+                <span className="text-3xl font-black text-[#054a29]">${totalPrice.toLocaleString('es-CO')}</span>
+              </div>
+
+              {/* Main Action */}
               <button
                 type="submit"
-                disabled={Object.keys(errors).length > 0}
-                className="hidden md:flex w-full bg-[#d4e157] text-[#054a29] py-6 rounded-2xl font-black text-xl items-center justify-center gap-3 hover:bg-emerald-green hover:text-white transition-all active:scale-95 shadow-xl uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={Object.keys(errors).length > 0 || isSubmitting}
+                className="hidden md:flex w-full bg-[#8cc63f] text-[#054a29] py-5 px-8 rounded-2xl font-black text-lg uppercase tracking-widest hover:bg-[#7ab62f] hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-lime-200/50 items-center justify-center gap-3 disabled:opacity-70 disabled:grayscale disabled:cursor-not-allowed"
               >
-                Pagar de forma segura <Send size={24} />
+                {isSubmitting ? (
+                  <>Procesando...</>
+                ) : (
+                  <>Pagar de forma segura <Lock size={20} /></>
+                )}
               </button>
 
-              {/* Manual Fallback if Widget fails */}
-              <div id="wompi-fallback" className="hidden text-center mt-4">
-                <p className="text-sm text-gray-500 mb-2">¿No abre la ventana de pago?</p>
+              {/* Manual Fallback Link - Styled nicely */}
+              <div id="wompi-fallback" className="hidden mt-6 bg-amber-50 border border-amber-100 p-4 rounded-xl text-center animate-fade-in-up">
+                <p className="text-amber-800 text-xs font-bold uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
+                  <AlertCircle size={14} />
+                  ¿Problemas con el botón de pago?
+                </p>
                 <a href="#" onClick={(e) => {
                   e.preventDefault();
                   const link = localStorage.getItem('last_wompi_link');
                   if (link) window.location.href = link;
-                  else alert('Por favor intenta hacer clic en "Pagar" nuevamente.');
-                }} className="text-[#054a29] font-bold underline">
-                  Clic aquí para pagar directamente en Wompi
+                  else alert('Por favor intenta hacer clic en "Pagar" nuevamente para generar el enlace.');
+                }} className="inline-block bg-[#054a29] text-white px-6 py-2 rounded-lg text-sm font-bold shadow-lg hover:bg-emerald-900 transition-colors">
+                  Usar Enlace Seguro Alternativo
                 </a>
               </div>
 
-              {/* Mobile Sticky Button */}
-              <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 shadow-2xl">
-                <button
-                  type="submit"
-                  disabled={Object.keys(errors).length > 0}
-                  className="w-full bg-[#d4e157] text-[#054a29] py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-3 active:scale-95 shadow-xl uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Pagar {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(totalPrice)} <Send size={20} />
-                </button>
-              </div>
+              <p className="text-center text-[10px] text-gray-400 mt-6 max-w-xs mx-auto flex items-center justify-center gap-2">
+                <Lock size={10} />
+                Tus datos viajan encriptados y no son almacenados.
+              </p>
             </div>
           </form>
+
+          {/* Mobile Sticky Button - Redesigned */}
+          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 p-4 z-50 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+            <button
+              onClick={handleSubmit}
+              disabled={Object.keys(errors).length > 0 || isSubmitting}
+              className="w-full bg-[#8cc63f] text-[#054a29] py-4 rounded-xl font-black text-base uppercase tracking-widest shadow-lg shadow-lime-200/50 flex items-center justify-center gap-2 disabled:opacity-70 disabled:grayscale"
+            >
+              {isSubmitting ? 'Procesando...' : (
+                <>
+                  Pagar ${totalPrice.toLocaleString('es-CO')} <Lock size={16} />
+                </>
+              )}
+            </button>
+          </div>
 
           {/* Trust Signals Section - Estilo E-commerce Colombiano */}
           <div className="px-8 md:px-12 pb-10">
