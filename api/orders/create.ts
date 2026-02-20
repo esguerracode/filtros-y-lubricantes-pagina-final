@@ -1,6 +1,10 @@
+/**
+ * Endpoint: POST /api/orders/create
+ * Genera la referencia, firma de integridad y notifica por Telegram.
+ * Sin WooCommerce. Todo en Vercel.
+ */
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { generateIntegritySignature, copToCents } from '../_utils/wompi.js';
-import { createOrder } from '../_utils/woo.js';
 import { sendTelegram } from '../_utils/telegram.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -19,53 +23,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const calculatedTotal = items.reduce((acc: number, item: any) => {
-      const price = parseFloat(item.price) || 0;
-      const qty = Number(item.quantity) || 1;
-      return acc + (price * qty);
+      return acc + (parseFloat(item.price) * Number(item.quantity));
     }, 0);
 
     if (calculatedTotal <= 0) {
       return res.status(400).json({ error: 'Invalid total amount' });
     }
 
-    // 1. Create order in WooCommerce for stock management and persistence
-    let wooOrderId: number | null = null;
-    let reference = '';
-
-    try {
-      const wooOrder = await createOrder({
-        payment_method: 'wompi',
-        payment_method_title: 'Wompi (Bancolombia)',
-        set_paid: false,
-        status: 'pending',
-        billing: {
-          first_name: customer?.fullName || 'Cliente',
-          email: customer?.email || '',
-          phone: customer?.phoneNumber || '',
-          city: customer?.city || '',
-          address_1: customer?.address || ''
-        },
-        line_items: items.map((i: any) => ({
-          product_id: i.id,
-          quantity: Number(i.quantity) || 1
-        }))
-      });
-      wooOrderId = wooOrder.id;
-      reference = `WC-${wooOrderId}`;
-    } catch (wooError: any) {
-      console.error('WooCommerce creation failed, falling back to temporary reference:', wooError.message);
-      // Fallback to random reference if WC fails (to avoid blocking the payment)
-      reference = `FL-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
-    }
-
+    const reference = `FYL-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
     const currency = 'COP';
     const amountInCents = copToCents(calculatedTotal);
     const signature = generateIntegritySignature(reference, amountInCents, currency);
 
-    // CRITICAL: Fail fast si WOMPI_INTEGRITY_SECRET no está configurado en Vercel.
-    // Sin firma válida, Wompi rechaza la transacción silenciosamente.
+    // Fail fast si WOMPI_INTEGRITY_SECRET no está configurado
     if (!signature) {
-      console.error('❌ WOMPI_INTEGRITY_SECRET no está configurado en las variables de entorno de Vercel.');
+      console.error('❌ WOMPI_INTEGRITY_SECRET no configurado en Vercel Environment Variables');
       return res.status(500).json({
         error: 'Error de configuración del servidor de pagos. Contacta al administrador.'
       });
@@ -73,10 +45,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const itemsList = items
       .map((i: any) => {
-        const productName = i.name || i.title || 'Producto';
+        const name = i.name || i.title || 'Producto';
         const qty = Number(i.quantity) || 1;
         const price = parseFloat(i.price) || 0;
-        return `• ${productName} x${qty} = $${(price * qty).toLocaleString('es-CO')} COP`;
+        return `• ${name} x${qty} = $${(price * qty).toLocaleString('es-CO')} COP`;
       })
       .join('\n');
 
@@ -91,7 +63,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       `<b>Estado:</b> ⏳ Esperando pago Wompi`
     );
 
-    console.log(`✅ Order: ${reference} | Total: ${calculatedTotal} COP | Cents: ${amountInCents}`);
+    console.log(`✅ Orden: ${reference} | Total: ${calculatedTotal} COP | Cents: ${amountInCents}`);
 
     return res.status(200).json({
       reference,

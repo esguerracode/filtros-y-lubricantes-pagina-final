@@ -338,17 +338,34 @@ const Checkout: React.FC = () => {
               </div>
 
               {/* Main Action */}
-              <button
-                type="submit"
-                disabled={Object.keys(errors).length > 0 || isSubmitting}
-                className="hidden md:flex w-full bg-[#8cc63f] text-[#054a29] py-5 px-8 rounded-2xl font-black text-lg uppercase tracking-widest hover:bg-[#7ab62f] hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-lime-200/50 items-center justify-center gap-3 disabled:opacity-70 disabled:grayscale disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? (
-                  <>Procesando...</>
-                ) : (
-                  <>Pagar de forma segura <Lock size={20} /></>
-                )}
-              </button>
+              <div className="space-y-4">
+                <button
+                  type="submit"
+                  disabled={Object.keys(errors).length > 0 || isSubmitting}
+                  className="hidden md:flex w-full bg-[#8cc63f] text-[#054a29] py-5 px-8 rounded-2xl font-black text-lg uppercase tracking-widest hover:bg-[#7ab62f] hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-lime-200/50 items-center justify-center gap-3 disabled:opacity-70 disabled:grayscale disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <>Procesando...</>
+                  ) : (
+                    <>Pagar de forma segura <Lock size={20} /></>
+                  )}
+                </button>
+
+                {/* Mobile Sticky Button - Moved inside form */}
+                <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 p-4 z-50 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+                  <button
+                    type="submit"
+                    disabled={Object.keys(errors).length > 0 || isSubmitting}
+                    className="w-full bg-[#8cc63f] text-[#054a29] py-4 rounded-xl font-black text-base uppercase tracking-widest shadow-lg shadow-lime-200/50 flex items-center justify-center gap-2 disabled:opacity-70 disabled:grayscale"
+                  >
+                    {isSubmitting ? 'Procesando...' : (
+                      <>
+                        Pagar ${totalPrice.toLocaleString('es-CO')} <Lock size={16} />
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
 
               {/* Manual Fallback Link - Styled nicely */}
               <div id="wompi-fallback" className="hidden mt-6 bg-amber-50 border border-amber-100 p-4 rounded-xl text-center animate-fade-in-up">
@@ -373,20 +390,7 @@ const Checkout: React.FC = () => {
             </div>
           </form>
 
-          {/* Mobile Sticky Button - Redesigned */}
-          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 p-4 z-50 shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
-            <button
-              onClick={handleSubmit}
-              disabled={Object.keys(errors).length > 0 || isSubmitting}
-              className="w-full bg-[#8cc63f] text-[#054a29] py-4 rounded-xl font-black text-base uppercase tracking-widest shadow-lg shadow-lime-200/50 flex items-center justify-center gap-2 disabled:opacity-70 disabled:grayscale"
-            >
-              {isSubmitting ? 'Procesando...' : (
-                <>
-                  Pagar ${totalPrice.toLocaleString('es-CO')} <Lock size={16} />
-                </>
-              )}
-            </button>
-          </div>
+
 
           {/* Trust Signals Section - Estilo E-commerce Colombiano */}
           <div className="px-8 md:px-12 pb-10">
