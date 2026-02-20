@@ -3,7 +3,7 @@ import { generateIntegritySignature, copToCents } from '../_utils/wompi.js';
 
 async function sendTelegram(message: string) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_USER_ID;
+  const chatId = process.env.TELEGRAM_CHAT_ID || process.env.TELEGRAM_USER_ID;
   if (!token || !chatId) {
     console.warn('⚠️ Telegram not configured. Skipping notification.');
     return;
@@ -22,7 +22,7 @@ async function sendTelegram(message: string) {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(204).end();
@@ -43,12 +43,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Invalid total amount' });
     }
 
-    const reference = `FL-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
+    const reference = `FYL-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
     const currency = 'COP';
     const amountInCents = copToCents(calculatedTotal);
     const signature = generateIntegritySignature(reference, amountInCents, currency);
 
-    // Robust name fallback: name || title || 'Producto'
+    // CRITICAL: Fail fast si WOMPI_INTEGRITY_SECRET no está configurado en Vercel.
+    // Sin firma válida, Wompi rechaza la transacción silenciosamente.
+    if (!signature) {
+      console.error('❌ WOMPI_INTEGRITY_SECRET no está configurado en las variables de entorno de Vercel.');
+      return res.status(500).json({
+        error: 'Error de configuración del servidor de pagos. Contacta al administrador.'
+      });
+    }
+
     const itemsList = items
       .map((i: any) => {
         const productName = i.name || i.title || 'Producto';
@@ -66,10 +74,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       `<b>Ciudad:</b> ${customer?.city || 'N/A'}\n\n` +
       `<b>Productos:</b>\n${itemsList}\n\n` +
       `<b>TOTAL: $${calculatedTotal.toLocaleString('es-CO')} COP</b>\n` +
-      `<b>Estado:</b> ⏳ Pendiente de pago Wompi`
+      `<b>Estado:</b> ⏳ Pendiente de pago`
     );
 
-    console.log(`✅ Order: ${reference} | Total: ${calculatedTotal} COP | AmountInCents: ${amountInCents}`);
+    console.log(`✅ Order: ${reference} | Total: ${calculatedTotal} COP | Cents: ${amountInCents}`);
 
     return res.status(200).json({
       reference,
