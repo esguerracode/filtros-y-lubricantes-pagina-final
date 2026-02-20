@@ -19,7 +19,18 @@ export function validateWompiSignature(payload: any, signatureObj: any): boolean
         .update(chain)
         .digest('hex'); // lowercase hex - Wompi official spec
 
-    const provided = typeof signatureObj === 'string' ? signatureObj : signatureObj?.checksum;
+    // Si es string, puede ser JSON o hex puro
+    let provided: string | undefined;
+    if (typeof signatureObj === 'string') {
+        try {
+            const parsed = JSON.parse(signatureObj);
+            provided = parsed?.checksum;
+        } catch {
+            provided = signatureObj; // es hex puro directamente
+        }
+    } else {
+        provided = signatureObj?.checksum;
+    }
 
     if (!provided) return false;
     return provided.toLowerCase() === computed;

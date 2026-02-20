@@ -14,12 +14,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const payload = req.body;
-    const signature = req.headers['x-event-signature'] || req.headers['x-signature'];
+    const rawSig = req.headers['x-event-signature'] || req.headers['x-signature'];
+
+    // Parsear la firma — Wompi la envía como JSON string
+    let parsedSig: any;
+    try {
+      parsedSig = typeof rawSig === 'string' ? JSON.parse(rawSig as string) : rawSig;
+    } catch {
+      parsedSig = rawSig;
+    }
+
+    // Log para debugging en Vercel (remover después de confirmar)
+    console.log('📨 Webhook payload event:', payload?.event);
+    console.log('📨 Webhook transaction status:', payload?.data?.transaction?.status);
+    console.log('📨 Signature checksum recibido:', parsedSig?.checksum || rawSig);
 
     // 1. Validar firma de Wompi (seguridad)
-    if (!validateWompiSignature(payload, signature)) {
-      console.error('❌ Wompi Webhook: Firma inválida');
-      return res.status(401).send('Invalid Signature');
+    if (!validateWompiSignature(payload, parsedSig)) {
+      console.error('❌ Firma inválida. Checksum recibido:', parsedSig?.checksum);
+      // Retornar 200 temporalmente para diagnóstico — cambiar a 401 después
+      return res.status(200).send('Signature mismatch logged');
     }
 
     const { data } = payload;
