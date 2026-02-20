@@ -146,8 +146,9 @@ export const createOrderAndGetWompiData = async (
 // WOMPI WIDGET
 // ============================================================
 
-export const openWompiWidget = (transactionData: WompiTransactionData) => {
-    console.log('🚀 openWompiWidget called with:', transactionData);
+export const openWompiWidget = (transactionData: WompiTransactionData): void => {
+    console.group('🚀 Wompi Widget Initialization');
+    console.log('Transaction Data:', transactionData);
 
     if (!transactionData.publicKey) {
         alert('Error de configuración: Falta la llave pública de Wompi.');
@@ -163,6 +164,7 @@ export const openWompiWidget = (transactionData: WompiTransactionData) => {
             const widgetConfig: any = {
                 currency: transactionData.currency,
                 amountInCents: transactionData.amountInCents,
+                amount: transactionData.amountInCents, // Required alias for some widget versions
                 reference: transactionData.reference,
                 publicKey: transactionData.publicKey
             };
