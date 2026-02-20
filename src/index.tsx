@@ -13,6 +13,12 @@ if (window.fbq) {
 
 // GLOBAL ERROR HANDLER (Prevent White Screen of Death)
 window.onerror = function (message, source, lineno, colno, error) {
+  // Ignore Cross-Origin script errors (like Wompi widget or Analytics) to prevent crashing the app
+  if (typeof message === 'string' && (message.toLowerCase().includes('script error') || !source)) {
+    console.warn("Ignored Cross-Origin Script Error:", message);
+    return;
+  }
+
   console.error("Global Error Caught:", error);
   const errorMsg = `
     <div style="font-family: monospace; padding: 20px; background: #1a1a1a; color: #ff5555; height: 100vh; overflow: auto;">
