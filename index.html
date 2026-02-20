@@ -16,7 +16,7 @@
     window.dataLayer = window.dataLayer || [];
     function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
-    gtag('config', 'G-XXXXX'); // Placeholder
+    gtag('config', 'G-XXXXX');
   </script>
 
   <!-- Meta Pixel Code -->
@@ -42,7 +42,7 @@
   <link rel="icon" type="image/png" href="/Logos/isotipo.png">
   <link rel="apple-touch-icon" href="/Logos/isotipo.png">
 
-  <!-- Open Graph / Social Media (WhatsApp, Facebook, Instagram) -->
+  <!-- Open Graph / Social Media -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://filtrosylubricantes.co/">
   <meta property="og:title" content="Filtros y Lubricantes del Llano S.A.S.">
@@ -56,7 +56,7 @@
   <meta name="twitter:description" content="Potencia y protección para tu maquinaria pesada e industrial.">
   <meta name="twitter:image" content="https://filtrosylubricantes.co/Logos/logo.png">
 
-  <!-- Schema.org JSON-LD (Posicionamiento Local Meta y Casanare) -->
+  <!-- Schema.org JSON-LD -->
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -79,17 +79,9 @@
         "latitude": 4.163366,
         "longitude": -71.25634
       },
-      "servesCasanare": "Meta, Casanare, Villavicencio, Yopal, Aguazul, Mani",
       "openingHoursSpecification": {
         "@type": "OpeningHoursSpecification",
-        "dayOfWeek": [
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday"
-        ],
+        "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
         "opens": "07:00",
         "closes": "18:00"
       },
@@ -101,21 +93,9 @@
     }
     </script>
 
-  <!-- DNS Version Detector & Propagation Handler -->
-  <script>
-    (function () {
-      const CURRENT_VERSION = 'vercel-v2.0';
-      const storedVersion = localStorage.getItem('site_version');
+  <!-- Wompi Widget Script - REQUIRED for payment modal -->
+  <script src="https://checkout.wompi.co/widget.js"></script>
 
-      if (storedVersion && storedVersion !== CURRENT_VERSION) {
-        console.warn('⚠️ Nueva versión detectada. Actualizando...');
-        localStorage.setItem('site_version', CURRENT_VERSION);
-        location.reload(true);
-      } else {
-        localStorage.setItem('site_version', CURRENT_VERSION);
-      }
-    })();
-  </script>
   <style>
     .dns-banner {
       background: #fef3c7;
@@ -134,7 +114,6 @@
 
 <body>
   <div id="root"></div>
-  <!-- Usamos ruta absoluta para que Vite no se pierda -->
   <script type="module" src="/src/index.tsx"></script>
 </body>
 
