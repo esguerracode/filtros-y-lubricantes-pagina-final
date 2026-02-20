@@ -1,7 +1,7 @@
 /**
  * Wompi Payment Gateway Service
  * API de Pagos Colombia - Bancolombia
- * Documentación: https://docs.wompi.co
+ * Documentacion: https://docs.wompi.co
  */
 
 // ============================================================
@@ -61,7 +61,7 @@ export interface WompiTransactionData {
     taxInCents?: number;
     customerData?: WompiCustomer;
     shippingAddress?: WompiShippingAddress;
-    signature?: string; // Wompi integrity signature
+    signature?: string; // Wompi integrity signature (lowercase hex SHA256)
 }
 
 export interface WompiTransactionResponse {
@@ -108,16 +108,12 @@ export const createOrderAndGetWompiData = async (
     customerData: WompiCustomer,
     shippingAddress: WompiShippingAddress
 ): Promise<WompiTransactionData> => {
-
     const response = await fetch('/api/orders/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             items: cart,
-            customer: {
-                ...customerData,
-                city: shippingAddress.city
-            }
+            customer: { ...customerData, city: shippingAddress.city }
         })
     });
 
@@ -147,28 +143,29 @@ export const createOrderAndGetWompiData = async (
 // ============================================================
 
 export const openWompiWidget = (transactionData: WompiTransactionData): void => {
-    console.group('🚀 Wompi Widget Initialization');
+    console.group('Wompi Widget Initialization');
     console.log('Transaction Data:', transactionData);
 
     if (!transactionData.publicKey) {
-        alert('Error de configuración: Falta la llave pública de Wompi.');
-        console.error('❌ Missing WOMPI_PUBLIC_KEY');
+        alert('Error de configuracion: Falta la llave publica de Wompi.');
+        console.error('Missing WOMPI_PUBLIC_KEY');
         return;
     }
 
     const checkWidget = setInterval(() => {
         if ((window as any).WidgetCheckout) {
             clearInterval(checkWidget);
-            console.log('✅ Wompi Widget SDK found!');
+            console.log('Wompi Widget SDK found!');
 
             const widgetConfig: any = {
                 currency: transactionData.currency,
                 amountInCents: transactionData.amountInCents,
-                amount: transactionData.amountInCents, // Required alias for some widget versions
+                amount: transactionData.amountInCents,
                 reference: transactionData.reference,
                 publicKey: transactionData.publicKey
             };
 
+            // CRITICAL: signature integrity required in production
             if (transactionData.signature) {
                 widgetConfig.signature = { integrity: transactionData.signature };
             }
@@ -188,59 +185,63 @@ export const openWompiWidget = (transactionData: WompiTransactionData): void => 
                 };
             }
 
-            console.log('🔹 Initializing Wompi with Config:', JSON.stringify(widgetConfig, null, 2));
+            console.log('Initializing Wompi with Config:', JSON.stringify(widgetConfig, null, 2));
 
             try {
                 const checkout = new (window as any).WidgetCheckout(widgetConfig);
-
                 checkout.open((result: any) => {
-                    console.log('📩 Wompi Callback Result:', result);
+                    console.log('Wompi Callback Result:', result);
+
                     if (!result || !result.transaction) {
-                        console.error('❌ No transaction data received from Wompi callback');
+                        console.error('No transaction data received from Wompi callback');
                         return;
                     }
 
                     const transaction = result.transaction;
-                    console.log('✅ Transaction Status:', transaction.status);
+                    console.log('Transaction Status:', transaction.status);
 
                     const redirectBase = transactionData.redirectUrl || window.location.origin + '/success';
                     const redirectUrl = `${redirectBase}?status=${transaction.status.toLowerCase()}&reference=${transaction.reference}&id=${transaction.id}`;
-
-                    console.log('↪️ Redirecting to:', redirectUrl);
+                    console.log('Redirecting to:', redirectUrl);
                     window.location.href = redirectUrl;
                 });
             } catch (err) {
-                console.error('❌ Error initializing WidgetCheckout:', err);
+                console.error('Error initializing WidgetCheckout:', err);
                 alert('Error iniciando la pasarela de pagos. Por favor revisa la consola.');
             }
-
         } else {
-            console.log('⏳ Waiting for Wompi Widget SDK...');
+            console.log('Waiting for Wompi Widget SDK...');
         }
-    }, 500); // Check every 500ms
+    }, 500);
 
     setTimeout(() => {
         clearInterval(checkWidget);
         if (!(window as any).WidgetCheckout) {
-            alert('Error: La pasarela de pagos Wompi no cargó después de 15 segundos. Por favor verifica tu conexión o bloqueadores de anuncios.');
-            console.error('❌ Wompi widget TIMEOUT');
+            alert('Error: La pasarela de pagos Wompi no cargo. Por favor verifica tu conexion o bloqueadores de anuncios.');
+            console.error('Wompi widget TIMEOUT');
         }
-    }, 15000); // Wait 15s
+    }, 15000);
 };
 
 // ============================================================
-// PAYMENT LINK GENERATOR (alternative to widget)
+// PAYMENT LINK GENERATOR (fallback - alternative to widget)
+// FIX: Added signature[integrity] - required by Wompi in production
 // ============================================================
 
 export const generateWompiPaymentLink = (transactionData: WompiTransactionData): string => {
     const baseUrl = 'https://checkout.wompi.co/l';
-
     const params = new URLSearchParams({
         'public-key': transactionData.publicKey,
         currency: transactionData.currency,
         'amount-in-cents': transactionData.amountInCents.toString(),
         reference: transactionData.reference
     });
+
+    // CRITICAL FIX: signature integrity is REQUIRED by Wompi in production mode
+    // Without this, Wompi will reject the transaction
+    if (transactionData.signature) {
+        params.append('signature:integrity', transactionData.signature);
+    }
 
     if (transactionData.redirectUrl) {
         params.append('redirect-url', transactionData.redirectUrl);
