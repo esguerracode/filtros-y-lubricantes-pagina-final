@@ -109,6 +109,15 @@ const Checkout: React.FC = () => {
       // Usar el Widget directamente
       // const { openWompiWidget } = await import('../services/wompiService'); // Removed redundant dynamic import
       console.log('🔹 Starting Wompi Widget flow with:', transactionData);
+
+      // Generate and save manual link just in case
+      const manualLink = generateWompiPaymentLink(transactionData);
+      localStorage.setItem('last_wompi_link', manualLink);
+
+      // Show fallback button
+      const fallbackEl = document.getElementById('wompi-fallback');
+      if (fallbackEl) fallbackEl.classList.remove('hidden');
+
       openWompiWidget(transactionData);
 
     } catch (error: any) {
@@ -343,6 +352,19 @@ const Checkout: React.FC = () => {
               >
                 Pagar de forma segura <Send size={24} />
               </button>
+
+              {/* Manual Fallback if Widget fails */}
+              <div id="wompi-fallback" className="hidden text-center mt-4">
+                <p className="text-sm text-gray-500 mb-2">¿No abre la ventana de pago?</p>
+                <a href="#" onClick={(e) => {
+                  e.preventDefault();
+                  const link = localStorage.getItem('last_wompi_link');
+                  if (link) window.location.href = link;
+                  else alert('Por favor intenta hacer clic en "Pagar" nuevamente.');
+                }} className="text-[#054a29] font-bold underline">
+                  Clic aquí para pagar directamente en Wompi
+                </a>
+              </div>
 
               {/* Mobile Sticky Button */}
               <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 shadow-2xl">
