@@ -6,7 +6,7 @@ import { createHash } from 'crypto';
  * Result must be lowercase hex - Wompi spec
  */
 export function validateWompiSignature(payload: any, signatureObj: any): boolean {
-    const secret = process.env.WOMPI_EVENTS_SECRET || process.env.WOMPI_INTEGRITY_SECRET;
+    const secret = process.env.WOMPI_EVENTS_SECRET;
     if (!secret) throw new Error('WOMPI_EVENTS_SECRET missing');
 
     const { data, timestamp } = payload;
@@ -32,12 +32,8 @@ export function validateWompiSignature(payload: any, signatureObj: any): boolean
  * Reference: https://docs.wompi.co
  */
 export function generateIntegritySignature(reference: string, amountInCents: number, currency: string): string {
-    const secret = process.env.WOMPI_INTEGRITY_SECRET || process.env.WOMPI_EVENTS_SECRET;
-    if (!secret) {
-        console.error('WOMPI_INTEGRITY_SECRET is missing. Cannot generate valid integrity signature.');
-        // Con la verificación en create.ts, esto devolverá '' y disparará el error 500
-        return '';
-    }
+    const secret = process.env.WOMPI_INTEGRITY_SECRET;
+    if (!secret) { console.error('WOMPI_INTEGRITY_SECRET missing'); return ''; }
 
     const chain = `${reference}${amountInCents}${currency}${secret}`;
     // CRITICAL: digest('hex') returns lowercase - do NOT call toUpperCase()
