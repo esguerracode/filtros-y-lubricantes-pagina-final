@@ -19,6 +19,8 @@ const Checkout: React.FC = () => {
       apellido: '',
       email: '',
       telefono: '',
+      tipoDocumento: 'CC',
+      documento: '',
       ciudad: '',
       direccion: '',
       notas: ''
@@ -101,7 +103,9 @@ const Checkout: React.FC = () => {
         email: shippingData.email,
         fullName: `${shippingData.nombre.trim()} ${shippingData.apellido.trim()}`,
         phoneNumber: phone,
-        phoneNumberPrefix: '+57'
+        phoneNumberPrefix: '+57',
+        legalId: shippingData.documento,
+        legalIdType: shippingData.tipoDocumento as any
       };
 
       const shippingAddress: WompiShippingAddress = {
@@ -217,6 +221,48 @@ const Checkout: React.FC = () => {
                   onChange={e => {
                     setShippingData({ ...shippingData, apellido: e.target.value });
                     validateField('apellido', e.target.value);
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                  <ShieldCheck size={14} className="text-[#054a29]" /> Tipo de Documento
+                </label>
+                <select
+                  className="w-full px-6 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-emerald-50 outline-none transition-all appearance-none cursor-pointer font-medium text-gray-700"
+                  value={shippingData.tipoDocumento}
+                  onChange={e => setShippingData({ ...shippingData, tipoDocumento: e.target.value })}
+                >
+                  <option value="CC">Cédula de Ciudadanía</option>
+                  <option value="NIT">NIT</option>
+                  <option value="PP">Pasaporte</option>
+                  <option value="CE">Cédula de Extranjería</option>
+                </select>
+              </div>
+
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                  <ShieldCheck size={14} className="text-[#054a29]" /> Número de Documento
+                </label>
+                <input
+                  required
+                  type="text"
+                  placeholder="Ej: 10203040"
+                  className={`w-full px-6 py-4 bg-gray-50/50 border rounded-2xl focus:ring-4 outline-none transition-all ${errors.documento ? 'border-red-300 focus:ring-red-100' : 'border-gray-100 focus:ring-emerald-50 focus:border-emerald-200'}`}
+                  value={shippingData.documento}
+                  onChange={e => {
+                    setShippingData({ ...shippingData, documento: e.target.value });
+                    if (e.target.value.length < 5) {
+                      setErrors(prev => ({ ...prev, documento: 'Documento muy corto' }));
+                    } else {
+                      setErrors(prev => {
+                        const { documento, ...rest } = prev;
+                        return rest;
+                      });
+                    }
                   }}
                 />
               </div>
