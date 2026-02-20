@@ -9,18 +9,18 @@ async function sendTelegram(message: string) {
     return;
   }
   try {
-    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'HTML' })
     });
+    if (!res.ok) console.error('Telegram API error:', await res.text());
   } catch (e) {
     console.error('Telegram send failed:', e);
   }
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -35,7 +35,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Invalid items' });
     }
 
-    // Calculate total from cart items
     const calculatedTotal = items.reduce((acc: number, item: any) => {
       return acc + (parseFloat(item.price) * Number(item.quantity));
     }, 0);
@@ -44,15 +43,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Invalid total amount' });
     }
 
-    // Generate order reference and Wompi signature
     const reference = `FL-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
     const currency = 'COP';
     const amountInCents = copToCents(calculatedTotal);
     const signature = generateIntegritySignature(reference, amountInCents, currency);
 
-    // Build Telegram notification
+    // Robust name fallback: name || title || 'Producto'
     const itemsList = items
-      .map((i: any) => `• ${i.name} x${i.quantity} = $${(parseFloat(i.price) * i.quantity).toLocaleString('es-CO')} COP`)
+      .map((i: any) => {
+        const productName = i.name || i.title || 'Producto';
+        const qty = Number(i.quantity) || 1;
+        const price = parseFloat(i.price) || 0;
+        return `• ${productName} x${qty} = $${(price * qty).toLocaleString('es-CO')} COP`;
+      })
       .join('\n');
 
     await sendTelegram(
@@ -66,16 +69,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       `<b>Estado:</b> ⏳ Pendiente de pago Wompi`
     );
 
-    console.log(`✅ Order created: ${reference} | Total: ${calculatedTotal} COP | AmountInCents: ${amountInCents}`);
+    console.log(`✅ Order: ${reference} | Total: ${calculatedTotal} COP | AmountInCents: ${amountInCents}`);
 
-    // Return all fields expected by wompiService.ts
     return res.status(200).json({
-      reference,        // Used as Wompi reference
-      amountInCents,    // Used by Wompi widget
+      reference,
+      amountInCents,
       total: calculatedTotal.toString(),
       currency,
       key: reference,
-      signature         // Wompi integrity signature
+      signature
     });
 
   } catch (error: any) {
