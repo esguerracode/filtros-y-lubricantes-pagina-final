@@ -1,24 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { generateIntegritySignature, copToCents } from '../_utils/wompi.js';
-
-async function sendTelegram(message: string) {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID || process.env.TELEGRAM_USER_ID;
-  if (!token || !chatId) {
-    console.warn('⚠️ Telegram not configured. Skipping notification.');
-    return;
-  }
-  try {
-    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'HTML' })
-    });
-    if (!res.ok) console.error('Telegram API error:', await res.text());
-  } catch (e) {
-    console.error('Telegram send failed:', e);
-  }
-}
+import { createOrder } from '../_utils/woo.js';
+import { sendTelegram } from '../_utils/telegram.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -36,14 +19,45 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const calculatedTotal = items.reduce((acc: number, item: any) => {
-      return acc + (parseFloat(item.price) * Number(item.quantity));
+      const price = parseFloat(item.price) || 0;
+      const qty = Number(item.quantity) || 1;
+      return acc + (price * qty);
     }, 0);
 
     if (calculatedTotal <= 0) {
       return res.status(400).json({ error: 'Invalid total amount' });
     }
 
-    const reference = `FYL-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
+    // 1. Create order in WooCommerce for stock management and persistence
+    let wooOrderId: number | null = null;
+    let reference = '';
+
+    try {
+      const wooOrder = await createOrder({
+        payment_method: 'wompi',
+        payment_method_title: 'Wompi (Bancolombia)',
+        set_paid: false,
+        status: 'pending',
+        billing: {
+          first_name: customer?.fullName || 'Cliente',
+          email: customer?.email || '',
+          phone: customer?.phoneNumber || '',
+          city: customer?.city || '',
+          address_1: customer?.address || ''
+        },
+        line_items: items.map((i: any) => ({
+          product_id: i.id,
+          quantity: Number(i.quantity) || 1
+        }))
+      });
+      wooOrderId = wooOrder.id;
+      reference = `WC-${wooOrderId}`;
+    } catch (wooError: any) {
+      console.error('WooCommerce creation failed, falling back to temporary reference:', wooError.message);
+      // Fallback to random reference if WC fails (to avoid blocking the payment)
+      reference = `FL-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
+    }
+
     const currency = 'COP';
     const amountInCents = copToCents(calculatedTotal);
     const signature = generateIntegritySignature(reference, amountInCents, currency);
@@ -74,7 +88,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       `<b>Ciudad:</b> ${customer?.city || 'N/A'}\n\n` +
       `<b>Productos:</b>\n${itemsList}\n\n` +
       `<b>TOTAL: $${calculatedTotal.toLocaleString('es-CO')} COP</b>\n` +
-      `<b>Estado:</b> ⏳ Pendiente de pago`
+      `<b>Estado:</b> ⏳ Esperando pago Wompi`
     );
 
     console.log(`✅ Order: ${reference} | Total: ${calculatedTotal} COP | Cents: ${amountInCents}`);
