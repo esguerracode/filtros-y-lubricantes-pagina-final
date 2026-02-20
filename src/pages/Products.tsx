@@ -18,13 +18,8 @@ const Products: React.FC = () => {
   };
 
   const categories = useMemo(() => {
-<<<<<<< HEAD
     const availableCategories = new Set(allProducts.map(p => p.category));
     return ['Todos', ...Object.values(Category).filter(c => availableCategories.has(c))] as (Category | 'Todos')[];
-=======
-    const activeCategories = new Set(allProducts.map(p => p.category));
-    return ['Todos', ...Object.values(Category).filter(cat => activeCategories.has(cat))];
->>>>>>> d9c7ce464f1b20607d52afd9393e22a7d1f8b77c
   }, [allProducts]);
 
   const promoMessages = [
