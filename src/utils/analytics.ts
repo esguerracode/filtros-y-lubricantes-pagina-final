@@ -5,7 +5,7 @@ declare global {
     }
 }
 
-export const GTM_ID = 'G-XXXXX'; // To be replaced by User/Env
+export const GTM_ID = 'G-PENDIENTE'; // To be replaced by User/Env
 export const PIXEL_ID = import.meta.env.VITE_META_PIXEL_ID;
 
 // Helper to safely access dataLayer

@@ -42,8 +42,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 1. Validar firma de Wompi (seguridad)
     if (!validateWompiSignature(payload, parsedSig)) {
       console.error('❌ Firma inválida. Checksum recibido:', parsedSig?.checksum);
-      // Retornar 200 temporalmente para diagnóstico — cambiar a 401 después
-      return res.status(200).send('Signature mismatch logged');
+      return res.status(401).json({ error: 'Invalid signature' });
     }
 
     const { data } = payload;
