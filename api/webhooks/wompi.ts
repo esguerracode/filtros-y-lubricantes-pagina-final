@@ -14,6 +14,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const payload = req.body;
+
+    // === SUPER-DEBUG: Ver todos los headers que Wompi envía ===
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📨 TODOS LOS HEADERS RECIBIDOS:');
+    console.log(JSON.stringify(req.headers, null, 2));
+    console.log('═══════════════════════════════════════════════════');
+    console.log('📦 PAYLOAD COMPLETO:');
+    console.log(JSON.stringify(payload, null, 2));
+    console.log('═══════════════════════════════════════════════════');
+
     const rawSig = req.headers['x-event-signature'] || req.headers['x-signature'];
 
     // Parsear la firma — Wompi la envía como JSON string
