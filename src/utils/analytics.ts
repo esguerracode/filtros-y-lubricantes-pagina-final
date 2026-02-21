@@ -5,6 +5,7 @@ declare global {
     }
 }
 
+// TODO PRODUCCIÓN: reemplazar G-PENDIENTE con ID real de GA4
 export const GTM_ID = 'G-PENDIENTE'; // To be replaced by User/Env
 export const PIXEL_ID = import.meta.env.VITE_META_PIXEL_ID;
 

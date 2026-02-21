@@ -92,10 +92,14 @@ ${isWompiPayment ? '_Pago confirmado por Wompi_' : '_Solicito información para 
       navigate('/');
     } else if (orderRef && cart.length > 0) {
       // Analytics: Purchase
-      // Only fire if we have items (valid purchase session)
       trackPurchase(orderRef, totalPrice, 'COP');
+
+      // Si el pago fue aprobado, limpiar el carrito inmediatamente
+      if (wompiStatus === 'approved') {
+        clearCart();
+      }
     }
-  }, []);
+  }, [wompiStatus]);
 
   const handleFinish = () => {
     clearCart();

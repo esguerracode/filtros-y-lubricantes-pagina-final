@@ -73,6 +73,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         `<b>Monto:</b> $${amount} COP\n` +
         `<b>ID Wompi:</b> ${eventId}`
       );
+    } else if (status === 'PENDING') {
+      await sendTelegram(
+        `⏳ <b>PAGO PENDIENTE</b>\n\n` +
+        `<b>Orden:</b> ${ref}\n` +
+        `<b>Monto:</b> $${amount} COP\n` +
+        `<b>ID Wompi:</b> ${eventId}`
+      );
     } else if (status === 'VOIDED') {
       await sendTelegram(
         `⚠️ <b>PAGO ANULADO</b>\n\n` +

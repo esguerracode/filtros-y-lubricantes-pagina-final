@@ -355,9 +355,9 @@ const Checkout: React.FC = () => {
                   <ShieldCheck size={16} /> Pago Seguro SSL
                 </label>
                 <div className="flex gap-2 opacity-60 grayscale hover:grayscale-0 transition-all">
-                  <img src="/assets/payments/nequi.png" alt="Nequi" className="h-6 object-contain" />
-                  <img src="/assets/payments/pse.png" alt="PSE" className="h-6 object-contain" />
-                  <img src="/assets/payments/bancolombia.png" alt="Bancolombia" className="h-6 object-contain" />
+                  <img src="https://wompi.com/assets/img/nequi.svg" alt="Nequi" className="h-6 object-contain" />
+                  <img src="https://wompi.com/assets/img/pse.svg" alt="PSE" className="h-6 object-contain" />
+                  <img src="https://wompi.com/assets/img/bancolombia.svg" alt="Bancolombia" className="h-6 object-contain" />
                 </div>
               </div>
 
@@ -476,9 +476,9 @@ const Checkout: React.FC = () => {
             <div className="space-y-3">
               <p className="text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">Métodos de Pago Aceptados</p>
               <div className="flex flex-wrap items-center justify-center gap-4 opacity-60 grayscale hover:grayscale-0 transition-all">
-                <img src="/assets/payments/nequi.png" alt="Nequi" className="h-6 w-auto" />
-                <img src="/assets/payments/pse.png" alt="PSE" className="h-6 w-auto" />
-                <img src="/assets/payments/bancolombia.png" alt="Bancolombia" className="h-6 w-auto" />
+                <img src="https://wompi.com/assets/img/nequi.svg" alt="Nequi" className="h-6 w-auto" />
+                <img src="https://wompi.com/assets/img/pse.svg" alt="PSE" className="h-6 w-auto" />
+                <img src="https://wompi.com/assets/img/bancolombia.svg" alt="Bancolombia" className="h-6 w-auto" />
                 <img src="/assets/payments/wompi.png" alt="Wompi" className="h-6 w-auto" />
               </div>
             </div>

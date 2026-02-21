@@ -19,7 +19,7 @@ const WOMPI_CONFIG: WompiConfig = {
     publicKey: import.meta.env.VITE_WOMPI_PUBLIC_KEY || '',
     isTest: import.meta.env.VITE_WOMPI_TEST === 'true',
     currency: 'COP',
-    redirectUrl: import.meta.env.VITE_WOMPI_REDIRECT_URL || window.location.origin + '/success'
+    redirectUrl: 'https://filtrosylubricantes.co/success'
 };
 
 const WOMPI_WIDGET_URL = 'https://checkout.wompi.co/p/';
