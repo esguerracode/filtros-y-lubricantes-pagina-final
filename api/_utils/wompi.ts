@@ -5,35 +5,30 @@ import { createHash } from 'crypto';
  * Spec: SHA256(transaction.id + transaction.status + transaction.amount_in_cents + timestamp + secret)
  * Result must be lowercase hex - Wompi spec
  */
-export function validateWompiSignature(payload: any, signatureObj: any): boolean {
-    const secret = process.env.WOMPI_EVENTS_SECRET;
-    if (!secret) throw new Error('WOMPI_EVENTS_SECRET missing');
+export function validateWompiSignature(payload: any): boolean {
+    try {
+        const secret = process.env.WOMPI_EVENTS_SECRET;
+        if (!secret) throw new Error('WOMPI_EVENTS_SECRET missing');
 
-    const { data, timestamp } = payload;
-    const { transaction } = data;
+        const { checksum, properties } = payload.signature;
+        const timestamp = payload.timestamp;
 
-    const checksum = `${transaction.id}${transaction.status}${transaction.amount_in_cents}`;
-    const chain = `${checksum}${timestamp}${secret}`;
+        const chain = properties
+            .map((prop: string) => {
+                // Navegar por el objeto (ej: "data.transaction.id")
+                return prop.split('.').reduce((obj: any, key: string) => obj?.[key], payload);
+            })
+            .join('') + timestamp + secret;
 
-    const computed = createHash('sha256')
-        .update(chain)
-        .digest('hex'); // lowercase hex - Wompi official spec
+        const hash = createHash('sha256')
+            .update(chain)
+            .digest('hex');
 
-    // Si es string, puede ser JSON o hex puro
-    let provided: string | undefined;
-    if (typeof signatureObj === 'string') {
-        try {
-            const parsed = JSON.parse(signatureObj);
-            provided = parsed?.checksum;
-        } catch {
-            provided = signatureObj; // es hex puro directamente
-        }
-    } else {
-        provided = signatureObj?.checksum;
+        return hash === checksum;
+    } catch (e) {
+        console.error('Signature validation error:', e);
+        return false;
     }
-
-    if (!provided) return false;
-    return provided.toLowerCase() === computed;
 }
 
 /**

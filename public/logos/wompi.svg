@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40">
-  <rect width="120" height="40" rx="8" fill="#67B346"/>
-  <text x="60" y="26" text-anchor="middle" fill="white"
-    font-family="Arial" font-weight="bold" font-size="16">Wompi</text>
+  <rect width="120" height="40" rx="6" fill="#2C3E7A"/>
+  <text x="60" y="26" font-family="Arial" font-size="16" 
+  font-weight="bold" fill="white" text-anchor="middle">Wompi</text>
 </svg>

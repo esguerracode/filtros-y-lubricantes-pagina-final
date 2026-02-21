@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 40">
-  <rect width="100" height="40" rx="8" fill="#DA1884"/>
-  <text x="50" y="26" text-anchor="middle" fill="white" 
-    font-family="Arial" font-weight="bold" font-size="16">Nequi</text>
+  <rect width="100" height="40" rx="6" fill="#8B2FC9"/>
+  <text x="50" y="26" font-family="Arial" font-size="16" 
+  font-weight="bold" fill="white" text-anchor="middle">Nequi</text>
 </svg>
