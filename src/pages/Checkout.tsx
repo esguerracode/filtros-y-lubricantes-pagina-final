@@ -181,7 +181,7 @@ const Checkout: React.FC = () => {
   };
 
   const inputClasses = (name: string) => `
-    w-full px-5 py-4 bg-white border-2 rounded-2xl outline-none transition-all duration-200
+    w-full px-5 py-4 lg:px-4 lg:py-3 lg:text-base bg-white border-2 rounded-2xl outline-none transition-all duration-200
     ${touched[name] && errors[name]
       ? 'border-red-500 bg-red-50/20 focus:ring-4 focus:ring-red-100'
       : touched[name] && !errors[name] && shippingData[name as keyof typeof shippingData]
@@ -190,11 +190,11 @@ const Checkout: React.FC = () => {
     placeholder:text-gray-300 font-medium
   `;
 
-  const labelClasses = "flex items-center gap-2 text-[11px] font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1";
+  const labelClasses = "flex items-center gap-2 text-[11px] font-black lg:text-sm lg:font-semibold text-gray-500 uppercase tracking-widest mb-1.5 ml-1";
 
   return (
     <div className="pt-0 lg:pt-32 min-h-screen bg-[#f8fcf9] pb-32">
-      <div className="max-w-4xl mx-auto px-4 py-8 md:py-12">
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8 md:py-12">
 
         {/* Navigation & Progress */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
@@ -220,9 +220,9 @@ const Checkout: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-start">
           {/* Main Form Area */}
-          <div className="lg:col-span-3 space-y-8">
+          <div className="lg:col-span-2 space-y-8">
             <div className="bg-white rounded-[2.5rem] shadow-xl shadow-emerald-900/5 border border-gray-100 overflow-hidden">
               <div className="bg-[#054a29] p-8 text-white relative">
                 <div className="relative z-10 flex items-center justify-between">
@@ -245,7 +245,7 @@ const Checkout: React.FC = () => {
                     </div>
                     <h2 className="font-black uppercase text-sm tracking-widest text-[#054a29]">1. Datos Personales</h2>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6">
                     <div>
                       <label className={labelClasses}>Nombre <span className="text-red-400">*</span></label>
                       <input
@@ -283,7 +283,7 @@ const Checkout: React.FC = () => {
                     </div>
                     <h2 className="font-black uppercase text-sm tracking-widest text-[#054a29]">2. Identificación</h2>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6">
                     <div>
                       <label className={labelClasses}>Tipo <span className="text-red-400">*</span></label>
                       <div className="relative">
@@ -327,7 +327,7 @@ const Checkout: React.FC = () => {
                     </div>
                     <h2 className="font-black uppercase text-sm tracking-widest text-[#054a29]">3. Contacto</h2>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6">
                     <div className="md:col-span-1">
                       <label className={labelClasses}>Correo Electrónico <span className="text-red-400">*</span></label>
                       <input
@@ -369,7 +369,7 @@ const Checkout: React.FC = () => {
                     </div>
                     <h2 className="font-black uppercase text-sm tracking-widest text-[#054a29]">4. Envío</h2>
                   </div>
-                  <div className="grid grid-cols-1 gap-5">
+                  <div className="grid grid-cols-1 gap-5 lg:gap-6">
                     <div>
                       <label className={labelClasses}>Dirección Exacta <span className="text-red-400">*</span></label>
                       <input
@@ -382,7 +382,7 @@ const Checkout: React.FC = () => {
                         onBlur={() => handleBlur('direccion')}
                       />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6">
                       <div>
                         <label className={labelClasses}>Ciudad / Municipio <span className="text-red-400">*</span></label>
                         <input
@@ -443,7 +443,7 @@ const Checkout: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-4 sm:grid-cols-7 gap-3 mb-6">
+                    <div className="flex flex-wrap gap-4 mb-6">
                       {[
                         { src: '/logos/visa.svg', alt: 'Visa' },
                         { src: '/logos/mastercard.svg', alt: 'Mastercard' },
@@ -453,11 +453,11 @@ const Checkout: React.FC = () => {
                         { src: '/logos/pse.svg', alt: 'PSE' },
                         { src: '/logos/daviplata.svg', alt: 'Daviplata' },
                       ].map(logo => (
-                        <div key={logo.alt} className="aspect-video bg-white rounded-xl border border-gray-100 flex items-center justify-center p-1.5 hover:scale-105 transition-transform shadow-sm">
-                          <img src={logo.src} alt={logo.alt} className="w-full h-full object-contain" />
+                        <div key={logo.alt} className="bg-white rounded-xl border border-gray-100 flex items-center justify-center p-2 hover:scale-105 transition-transform shadow-sm">
+                          <img src={logo.src} alt={logo.alt} className="h-10 w-auto lg:h-12 object-contain" />
                         </div>
                       ))}
-                      <div className="aspect-video bg-white rounded-xl border border-gray-100 flex flex-col items-center justify-center p-2 opacity-40">
+                      <div className="aspect-video h-10 lg:h-12 bg-white rounded-xl border border-gray-100 flex flex-col items-center justify-center p-2 opacity-40">
                         <span className="text-[8px] font-black uppercase text-center leading-none">Efectivo</span>
                       </div>
                     </div>
@@ -504,7 +504,7 @@ const Checkout: React.FC = () => {
           </div>
 
           {/* Sidebar: Order Summary */}
-          <div className="lg:col-span-2 space-y-6 lg:sticky lg:top-40">
+          <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-40">
             <div className="bg-white rounded-[2.5rem] shadow-xl shadow-emerald-900/5 border border-gray-100 overflow-hidden">
               <div className="p-8 border-b-2 border-dashed border-gray-100">
                 <div className="flex items-center gap-3 mb-6">
