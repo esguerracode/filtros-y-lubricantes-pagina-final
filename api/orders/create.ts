@@ -6,6 +6,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { generateIntegritySignature, copToCents } from '../_utils/wompi.js';
 import { sendTelegram } from '../_utils/telegram.js';
+import { sendOrderConfirmationEmail } from '../_utils/email.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -62,6 +63,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       `<b>TOTAL: $${calculatedTotal.toLocaleString('es-CO')} COP</b>\n` +
       `<b>Estado:</b> ⏳ Esperando pago Wompi`
     );
+
+    // NOTIFICACIÓN POR EMAIL (Resend)
+    if (customer?.email) {
+      try {
+        await sendOrderConfirmationEmail({
+          to: customer.email,
+          customerName: customer.fullName || 'Cliente',
+          reference: reference,
+          transactionId: reference,
+          amount: calculatedTotal.toLocaleString('es-CO'),
+          items: items.map((item: any) => ({
+            name: item.name || item.title || 'Producto',
+            quantity: Number(item.quantity) || 1,
+            price: parseFloat(item.price) || 0
+          }))
+        });
+      } catch (emailErr) {
+        console.error('⚠️ Error al enviar email:', emailErr);
+      }
+    }
 
     console.log(`✅ Orden: ${reference} | Total: ${calculatedTotal} COP | Cents: ${amountInCents}`);
 
