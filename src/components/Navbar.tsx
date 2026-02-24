@@ -68,7 +68,7 @@ const Navbar: React.FC = () => {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group relative z-50">
           <div className="h-10 md:h-12 flex items-center justify-center transition-all duration-500 group-hover:scale-110">
-            <img src="/Logos/isotipo 2 .png" alt="Filtros y Lubricantes Logo" className="h-full w-auto object-contain drop-shadow-lg" />
+            <img src="/logos/isotipo2.png" alt="Filtros y Lubricantes Logo" className="h-full w-auto object-contain drop-shadow-lg" />
           </div>
           <div className="flex flex-col">
             <span className="text-white font-[1000] text-sm md:text-base leading-none tracking-tighter uppercase lg:grayscale group-hover:grayscale-0 transition-all">Filtros & Lubricantes</span>

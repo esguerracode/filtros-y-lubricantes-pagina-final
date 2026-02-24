@@ -33,7 +33,7 @@ const About: React.FC = () => {
 
         {/* Updated Background Tractor silhouette with image */}
         <div className="absolute -bottom-20 -right-20 opacity-10 w-[500px] h-[500px] rotate-[-15deg]">
-          <img src="Logo Heder.png" className="w-full h-full object-contain grayscale invert" alt="" />
+          <img src="/logos/logo.png" className="w-full h-full object-contain grayscale invert" alt="" />
         </div>
       </section>
 
@@ -82,7 +82,7 @@ const About: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center max-w-4xl mx-auto mb-24">
             <div className="flex justify-center mb-6">
-              <img src="/Logos/isotipo.png" className="w-24 h-24 object-contain opacity-30 grayscale" alt="Isotipo" />
+              <img src="/logos/isotipo.png" className="w-24 h-24 object-contain opacity-30 grayscale" alt="Isotipo" />
             </div>
             <h2 className="text-5xl md:text-7xl font-black mb-8 uppercase tracking-tighter">NUESTRO <span className="text-[#054a29]">EQUIPO</span> HUMANO</h2>
             <p className="text-gray-500 text-2xl font-bold italic tracking-tight">"Comprometidos con la excelencia y la energía que conecta tu mundo."</p>

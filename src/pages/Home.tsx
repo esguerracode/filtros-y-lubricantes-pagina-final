@@ -108,7 +108,7 @@ const Home: React.FC = () => {
 
           <div className="mb-2 md:mb-6 animate-fade-in group">
             <img
-              src="/Logos/isotipo 2 .png"
+              src="/logos/isotipo2.png"
               alt="Filtros y Lubricantes Logo"
               className="w-auto object-contain drop-shadow-2xl group-hover:scale-105 transition-transform duration-700 h-[80px] sx:h-[100px] sm:h-[180px] md:h-[220px]"
             />

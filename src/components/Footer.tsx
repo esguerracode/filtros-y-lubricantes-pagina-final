@@ -11,7 +11,7 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 mb-20">
           <div className="lg:col-span-5 space-y-8">
             <div className="flex items-center gap-4 mb-6">
-              <img src="/Logos/isotipo 2 .png" alt="Isotipo" className="w-16 h-16 object-contain" />
+              <img src="/logos/isotipo2.png" alt="Isotipo" className="w-16 h-16 object-contain" />
             </div>
             <h3 className="text-4xl font-black tracking-tighter uppercase leading-none">
               Filtros & <br /> Lubricantes <br /> <span className="text-[#d4e157]">del Llano S.A.S</span>
