@@ -31,7 +31,7 @@ function ProductList() {
           price: parseFloat(wooProduct.price) || 0,
           category: mapWooCategory(wooProduct.categories),
           description: wooProduct.short_description || wooProduct.description || '',
-          specs: wooProduct.attributes?.length > 0 
+          specs: wooProduct.attributes?.length > 0
             ? wooProduct.attributes.map((a: any) => `${a.name}: ${a.options.join(', ')}`).join(' | ')
             : undefined,
           image: wooProduct.images?.[0]?.src || '/placeholder.jpg'
@@ -48,12 +48,14 @@ function ProductList() {
 
   const mapWooCategory = (categories: any[]): Category => {
     if (!categories || categories.length === 0) return Category.LUBRICANTES;
-    
+
     const catName = categories[0].name.toLowerCase();
-    if (catName.includes('lubricante')) return Category.LUBRICANTES;
-    if (catName.includes('filtro')) return Category.FILTROS;
-    if (catName.includes('batería') || catName.includes('bateria')) return Category.BATERÍAS;
-    if (catName.includes('llanta')) return Category.LLANTAS;
+    if (catName.includes('aceite') || catName.includes('oil')) return Category.FILTROS_ACEITE;
+    if (catName.includes('aire') && catName.includes('motor')) return Category.FILTROS_AIRE_MOTOR;
+    if (catName.includes('aire') || catName.includes('cabina') || catName.includes('acondicionado')) return Category.FILTROS_AIRE_AC;
+    if (catName.includes('combustible') || catName.includes('fuel')) return Category.FILTROS_COMBUSTIBLE;
+    if (catName.includes('lubricante') || catName.includes('aceite')) return Category.LUBRICANTES;
+    if (catName.includes('kit')) return Category.KITS;
     return Category.LUBRICANTES;
   };
 
