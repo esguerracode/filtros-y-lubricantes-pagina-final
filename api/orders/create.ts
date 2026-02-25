@@ -64,7 +64,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       `<b>Estado:</b> ⏳ Esperando pago Wompi`
     );
 
-    // NOTIFICACIÓN POR EMAIL (Resend)
+    // NOTIFICACIÓN POR EMAIL (Brevo)
     if (customer?.email) {
       try {
         await sendOrderConfirmationEmail({

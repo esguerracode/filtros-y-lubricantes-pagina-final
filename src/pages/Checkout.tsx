@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../components/CartContext';
-import { ArrowLeft, MapPin, User, Phone, Check, ShieldCheck, Lock, AlertCircle, Truck, CreditCard, Mail, FileText, ShoppingBag, Loader2 } from 'lucide-react';
+import { ArrowLeft, User, Phone, Check, ShieldCheck, Lock, Truck, CreditCard, FileText, ShoppingBag, Loader2, MapPin } from 'lucide-react';
 import { generateWompiPaymentLink, createOrderAndGetWompiData, openWompiWidget } from '../services/wompiService';
 import type { WompiCustomer, WompiShippingAddress } from '../services/wompiService';
 
@@ -124,7 +124,6 @@ const Checkout: React.FC = () => {
     e.preventDefault();
 
     if (!isFormValid) {
-      // Mark all as touched to show errors
       const allTouched: Record<string, boolean> = {};
       Object.keys(shippingData).forEach(key => allTouched[key] = true);
       setTouched(allTouched);
@@ -394,6 +393,7 @@ const Checkout: React.FC = () => {
                           onChange={e => handleInputChange('ciudad', e.target.value)}
                           onBlur={() => handleBlur('ciudad')}
                         />
+                        {touched.ciudad && errors.ciudad && <p className="text-red-500 text-[10px] font-bold mt-1.5 ml-1 uppercase">{errors.ciudad}</p>}
                       </div>
                       <div>
                         <label className={labelClasses}>Notas Adicionales (Opcional)</label>
@@ -406,10 +406,25 @@ const Checkout: React.FC = () => {
                         />
                       </div>
                     </div>
+
+                    {/* Banner Envío GRATIS */}
+                    <div className="bg-gradient-to-br from-emerald-50 to-green-50 border-2 border-emerald-200 rounded-[1.5rem] p-5 flex items-center gap-4">
+                      <div className="w-12 h-12 bg-[#054a29] rounded-2xl flex items-center justify-center flex-shrink-0">
+                        <Truck size={22} className="text-white" />
+                      </div>
+                      <div>
+                        <p className="font-black uppercase text-sm tracking-widest text-[#054a29]">🎉 Envío Gratis</p>
+                        <p className="text-xs text-gray-500 font-medium mt-0.5">Coordinamos la entrega contigo por WhatsApp después de confirmar tu pago.</p>
+                      </div>
+                      <div className="ml-auto">
+                        <span className="text-2xl font-black text-[#8cc63f]">$0</span>
+                      </div>
+                    </div>
                   </div>
                 </section>
               </form>
-              Section: Payment Methods
+
+              {/* Payment Methods */}
               <div className="p-8 md:p-10 pt-0">
                 <div className="pt-10 border-t-2 border-gray-50">
                   <div className="flex items-center justify-between mb-8">
@@ -543,16 +558,18 @@ const Checkout: React.FC = () => {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Envío</span>
-                  <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 rounded-full">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                    <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Gratis</span>
-                  </div>
+                  <span className="text-xs font-black text-[#054a29] flex items-center gap-1.5">
+                    <Truck size={12} /> Gratis
+                  </span>
                 </div>
 
                 <div className="pt-6 mt-4 border-t-2 border-gray-100 flex items-end justify-between">
                   <div>
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total a Pagar</p>
-                    <p className="text-4xl font-black text-[#054a29] tracking-tighter">${totalPrice.toLocaleString('es-CO')}</p>
+                    <p className="text-4xl font-black text-[#054a29] tracking-tighter">
+                      ${totalPrice.toLocaleString('es-CO')}
+                    </p>
+                    <p className="text-[9px] text-emerald-600 font-bold mt-1">✓ Envío incluido</p>
                   </div>
                 </div>
 
@@ -589,14 +606,6 @@ const Checkout: React.FC = () => {
                 <p className="text-[9px] text-gray-400 text-center font-bold uppercase tracking-widest mt-6 leading-relaxed max-w-[200px] mx-auto">
                   Al pagar, aceptas nuestros términos y condiciones de compra.
                 </p>
-              </div>
-            </div>
-
-            {/* Sticky Mobile Summary Indicator (Optional: user didn't ask for it but enhances UX) */}
-            <div className="md:hidden fixed bottom-24 right-4 z-40">
-              <div className="bg-[#054a29] text-white p-4 rounded-full shadow-2xl flex items-center gap-3 animate-bounce">
-                < ShoppingBag size={20} />
-                <span className="font-black text-sm">${totalPrice.toLocaleString('es-CO')}</span>
               </div>
             </div>
           </div>
