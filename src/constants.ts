@@ -242,7 +242,7 @@ export const PRODUCTS: Product[] = [
     price: 55000,
     category: Category.LUBRICANTES,
     description: 'Aceite Motorcraft 5W30 Full Sintético para Ford Ranger 2025-2026. Presentación: Cuarto de galón.',
-    image: '/images/products/clean_motorcraft_5w30_quart_1771120162232.png'
+    image: '/images/products/110.png'
   },
 
   // ============================================================

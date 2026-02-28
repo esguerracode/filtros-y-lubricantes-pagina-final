@@ -22,8 +22,8 @@ export async function sendOrderConfirmationEmail({
   items: { name: string; quantity: number; price: number }[];
   whatsapp?: string;
 }) {
-  const apiKey = process.env.BREVO_API_KEY;
-  const fromEmail = process.env.BREVO_FROM_EMAIL || 'ventas@filtrosylubricantes.co';
+  const apiKey = process.env.BREVO_API_KEY?.replace(/\\r\\n/g, '').trim();
+  const fromEmail = process.env.BREVO_FROM_EMAIL?.replace(/\\r\\n/g, '').trim() || 'ventas@filtrosylubricantes.co';
 
   if (!apiKey) {
     console.error('❌ BREVO_API_KEY not set');
