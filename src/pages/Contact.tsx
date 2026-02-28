@@ -10,6 +10,10 @@ const Contact: React.FC = () => {
     mensaje: ''
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
   // Real-time Urgency Logic: Mocking dynamic slots for 2026 UX trend
   const [slotsRemaining, setSlotsRemaining] = useState(3);
 
@@ -20,28 +24,37 @@ const Contact: React.FC = () => {
     return () => clearTimeout(timer);
   }, [slotsRemaining]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setErrorMessage('');
 
-    const message = `📞 NUEVA CONSULTA TÉCNICA
------------------------------------
-*Nombre*: ${formData.nombre}
-*Teléfono*: ${formData.telefono}
-*Email*: ${formData.email}
------------------------------------
-*Mensaje*:
-${formData.mensaje}
------------------------------------
-_Enviado desde el formulario de contacto_`;
+    try {
+      const response = await fetch('/api/contact/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${CONTACT_INFO.whatsapp}?text=${encodedMessage}`;
+      if (!response.ok) {
+        throw new Error('Error enviando el mensaje');
+      }
 
-    // Abrir WhatsApp
-    window.open(whatsappUrl, '_blank');
+      // Limpiar formulario y mostrar éxito
+      setFormData({ nombre: '', email: '', telefono: '', mensaje: '' });
+      setIsSuccess(true);
 
-    // Limpiar formulario
-    setFormData({ nombre: '', email: '', telefono: '', mensaje: '' });
+      // Ocultar mensaje de éxito después de 5 segundos
+      setTimeout(() => setIsSuccess(false), 5000);
+
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setErrorMessage('Hubo un problema enviando tu solicitud. Por favor intenta mediante WhatsApp.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleWhatsApp = () => {
@@ -162,13 +175,32 @@ _Enviado desde el formulario de contacto_`;
                     />
                   </div>
 
-                  <button
-                    type="submit"
-                    className="w-full bg-emerald-950 text-white py-8 rounded-[2.5rem] font-[1000] text-xl flex items-center justify-center gap-4 hover:bg-emerald-900 hover:shadow-[0_20px_50px_rgba(6,78,59,0.3)] transition-all active:scale-[0.97] group"
-                  >
-                    RECLAMAR ATENCIÓN TÉCNICA
-                    <ArrowRight className="group-hover:translate-x-2 transition-transform" />
-                  </button>
+                  {errorMessage && (
+                    <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-sm font-bold border border-red-100 flex items-center gap-3 animate-fade-in-up">
+                      <span>{errorMessage}</span>
+                    </div>
+                  )}
+
+                  {isSuccess ? (
+                    <div className="w-full bg-emerald-50 text-emerald-900 py-8 rounded-[2.5rem] flex flex-col items-center justify-center border-2 border-emerald-500 animate-fade-in text-center p-6">
+                      <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center text-white mb-4 animate-[springBounce_0.5s_ease-out]">
+                        <CheckCircle2 size={32} />
+                      </div>
+                      <h3 className="font-black text-2xl uppercase tracking-tighter mb-2">¡Solicitud Recibida!</h3>
+                      <p className="text-emerald-800/80 font-medium max-w-[250px]">
+                        Un ingeniero se contactará contigo en menos de 15 minutos.
+                      </p>
+                    </div>
+                  ) : (
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full bg-emerald-950 text-white py-8 rounded-[2.5rem] font-[1000] text-xl flex items-center justify-center gap-4 hover:bg-emerald-900 hover:shadow-[0_20px_50px_rgba(6,78,59,0.3)] transition-all active:animate-spring disabled:opacity-70 group"
+                    >
+                      {isSubmitting ? 'ENVIANDO...' : 'RECLAMAR ATENCIÓN TÉCNICA'}
+                      {!isSubmitting && <ArrowRight className="group-hover:translate-x-2 transition-transform" />}
+                    </button>
+                  )}
 
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-8 pt-6 border-t border-gray-50">
                     <div className="flex items-center gap-3">
