@@ -161,18 +161,20 @@ const Cart: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile Sticky Payment Bar - Lifted to avoid overlap with global MobileActionBar */}
+      {/* Mobile Sticky Payment Bar - App-like UX */}
       {cart.length > 0 && (
         <div className="md:hidden fixed bottom-24 left-4 right-4 z-40 animate-fade-in-up">
           <button
             onClick={() => navigate('/checkout')}
-            className="w-full flex items-center justify-between bg-[#d4e157] text-[#054a29] p-6 rounded-3xl font-black text-lg uppercase tracking-widest shadow-2xl border-2 border-[#054a29]/20 active:scale-95 transition-all"
+            className="w-full flex items-center justify-between font-black text-lg shadow-[0_20px_50px_rgba(0,0,0,0.5)] active:scale-95 transition-all neo-glass-dark p-6"
           >
-            <div className="flex flex-col items-start leading-none">
+            <div className="flex flex-col items-start leading-none text-white">
               <span className="text-xs font-bold uppercase mb-1 opacity-80">Finalizar pedido</span>
-              <span className="text-xl tracking-tighter">{formattedPrice(totalPrice)}</span>
+              <span className="text-xl tracking-tighter text-[#d4e157]">{formattedPrice(totalPrice)}</span>
             </div>
-            <ArrowRight size={24} strokeWidth={3} />
+            <div className="bg-[#d4e157] text-[#054a29] p-3 rounded-2xl shadow-inner">
+              <ArrowRight size={24} strokeWidth={3} />
+            </div>
           </button>
         </div>
       )}

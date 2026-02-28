@@ -492,7 +492,7 @@ const Checkout: React.FC = () => {
                     <button
                       onClick={handleSubmit}
                       disabled={!isFormValid || isSubmitting}
-                      className="w-full bg-[#8cc63f] text-[#054a29] py-5 rounded-[1.5rem] font-black text-lg uppercase tracking-widest shadow-xl shadow-lime-200/50 flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale transition-all active:scale-95"
+                      className="w-full bg-[#8cc63f] text-[#054a29] py-5 rounded-[1.5rem] font-black text-lg uppercase tracking-widest shadow-xl shadow-lime-200/50 flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale transition-all active:animate-spring"
                     >
                       {isSubmitting ? <Loader2 className="animate-spin" /> : <>Finalizar y Pagar <Lock size={20} /></>}
                     </button>
@@ -577,7 +577,7 @@ const Checkout: React.FC = () => {
                   <button
                     onClick={handleSubmit}
                     disabled={!isFormValid || isSubmitting}
-                    className="hidden md:flex w-full bg-[#8cc63f] text-[#054a29] py-5 px-8 rounded-[1.5rem] font-black text-lg uppercase tracking-widest hover:bg-[#7ab62f] hover:-translate-y-1 active:translate-y-0 shadow-2xl shadow-lime-200/50 items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed transition-all"
+                    className="hidden md:flex w-full bg-[#8cc63f] text-[#054a29] py-5 px-8 rounded-[1.5rem] font-black text-lg uppercase tracking-widest hover:bg-[#7ab62f] shadow-2xl shadow-lime-200/50 items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed transition-all active:animate-spring"
                   >
                     {isSubmitting ? (
                       <Loader2 className="animate-spin" />
