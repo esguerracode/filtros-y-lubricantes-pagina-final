@@ -187,8 +187,8 @@ const Home: React.FC = () => {
       {/* Industrial Category Hub (New conversion driver) */}
       <section className="py-16 md:py-24 bg-white relative -mt-8 md:-mt-32 z-30 rounded-t-[3rem] md:rounded-none">
         <div className="max-w-[1400px] mx-auto px-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Link to="/productos" className="group bg-gradient-to-br from-[#054a29] to-[#033a20] p-8 md:p-10 rounded-[3rem] shadow-2xl hover:-translate-y-4 transition-all duration-500 flex flex-col justify-between border border-white/5 overflow-hidden relative min-h-[250px] md:min-h-[300px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
+            <Link to="/productos" className="group lg:col-span-2 bg-gradient-to-br from-[#054a29] to-[#033a20] p-8 md:p-10 rounded-[3rem] shadow-2xl hover:-translate-y-4 hover:shadow-[0_20px_50px_rgba(5,74,41,0.3)] transition-all duration-500 flex flex-col justify-between border border-white/5 overflow-hidden relative min-h-[250px] md:min-h-[300px] active:animate-spring">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-[#d4e157]/10 transition-colors"></div>
               <div className="bg-[#d4e157] w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center text-black shadow-lg mb-6 md:mb-8 transform -rotate-12 group-hover:rotate-0 transition-transform">
                 <Droplets size={24} className="md:w-7 md:h-7" />
@@ -202,7 +202,7 @@ const Home: React.FC = () => {
               </div>
             </Link>
 
-            <Link to="/productos" className="group bg-white p-8 md:p-10 rounded-[3rem] shadow-xl hover:-translate-y-4 transition-all duration-500 flex flex-col justify-between border border-gray-100 overflow-hidden relative min-h-[250px] md:min-h-[300px]">
+            <Link to="/productos" className="group lg:col-span-2 bg-white p-8 md:p-10 rounded-[3rem] shadow-xl hover:-translate-y-4 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-500 flex flex-col justify-between border border-gray-100 overflow-hidden relative min-h-[250px] md:min-h-[300px] active:animate-spring">
               <div className="bg-gray-100 w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center text-gray-900 shadow-sm mb-6 md:mb-8 transform rotate-6 group-hover:rotate-0 transition-transform group-hover:bg-[#d4e157] group-hover:text-black">
                 <Settings size={24} className="md:w-7 md:h-7" />
               </div>
@@ -215,7 +215,7 @@ const Home: React.FC = () => {
               </div>
             </Link>
 
-            <Link to="/productos" className="group bg-white p-8 md:p-10 rounded-[3rem] shadow-xl hover:-translate-y-4 transition-all duration-500 flex flex-col justify-between border border-gray-100 overflow-hidden relative min-h-[250px] md:min-h-[300px]">
+            <Link to="/productos" className="group lg:col-span-2 bg-white p-8 md:p-10 rounded-[3rem] shadow-xl hover:-translate-y-4 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-500 flex flex-col justify-between border border-gray-100 overflow-hidden relative min-h-[250px] md:min-h-[300px] active:animate-spring">
               <div className="bg-gray-100 w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center text-gray-900 shadow-sm mb-6 md:mb-8 transform -rotate-6 group-hover:rotate-0 transition-transform group-hover:bg-[#d4e157] group-hover:text-black">
                 <Battery size={24} className="md:w-7 md:h-7" />
               </div>
@@ -228,7 +228,7 @@ const Home: React.FC = () => {
               </div>
             </Link>
 
-            <Link to="/productos" className="group bg-[#d4e157] p-8 md:p-10 rounded-[3rem] shadow-2xl hover:-translate-y-4 transition-all duration-500 flex flex-col justify-between border border-white/20 overflow-hidden relative min-h-[250px] md:min-h-[300px]">
+            <Link to="/productos" className="group lg:col-span-3 lg:col-start-2 bg-[#d4e157] p-8 md:p-10 rounded-[3rem] shadow-2xl hover:-translate-y-4 hover:shadow-[0_20px_50px_rgba(212,225,87,0.3)] transition-all duration-500 flex flex-col justify-between border border-white/20 overflow-hidden relative min-h-[250px] md:min-h-[300px] active:animate-spring">
               <div className="bg-black w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center text-[#d4e157] shadow-lg mb-6 md:mb-8 transform rotate-12 group-hover:rotate-0 transition-transform">
                 <Disc size={24} className="md:w-7 md:h-7" />
               </div>

@@ -78,7 +78,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
           <button
             onClick={() => addToCart(product)}
-            className="w-14 h-14 md:w-12 md:h-12 bg-[#054a29] text-white rounded-2xl flex items-center justify-center transition-all hover:bg-black active:scale-95 shadow-lg shadow-emerald-900/10 group/btn"
+            className="w-14 h-14 md:w-12 md:h-12 bg-[#054a29] text-white rounded-2xl flex items-center justify-center transition-all hover:bg-black hover:scale-105 active:animate-spring shadow-lg shadow-emerald-900/20 group/btn"
             aria-label={`Agregar ${product.name} al carrito`}
           >
             <ShoppingCart size={20} strokeWidth={2.5} className="md:scale-100 scale-110" />

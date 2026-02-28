@@ -31,15 +31,15 @@ const MobileActionBar: React.FC = () => {
     ];
 
     return (
-        <div className="md:hidden fixed bottom-0 left-0 w-full z-50 px-4 pb-4 pb-safe transition-all duration-500 transform [.menu-open_&]:translate-y-24 [.menu-open_&]:opacity-0 pointer-events-auto [.menu-open_&]:pointer-events-none">
-            <div className="bg-emerald-950/90 backdrop-blur-2xl border border-white/10 rounded-[2rem] shadow-[0_-10px_40px_rgba(0,0,0,0.3)] flex items-center justify-between p-1 md:p-2">
+        <div className="md:hidden fixed bottom-4 left-4 right-4 z-50 pb-safe transition-all duration-500 transform [.menu-open_&]:translate-y-24 [.menu-open_&]:opacity-0 pointer-events-auto [.menu-open_&]:pointer-events-none">
+            <div className="neo-glass-dark rounded-[2rem] flex items-center justify-between p-2">
                 {navItems.map((item) => {
                     const isActive = location.pathname === item.path;
                     return (
                         <Link
                             key={item.path}
                             to={item.path}
-                            className={`flex flex-col items-center justify-center flex-1 py-1.5 transition-all duration-300 ${isActive ? 'text-brand-yellow font-black' : 'text-white/50 font-bold'
+                            className={`flex flex-col items-center justify-center flex-1 py-2 px-1 transition-all duration-300 rounded-xl active:bg-white/10 active:animate-spring ${isActive ? 'text-brand-yellow font-black' : 'text-white/60 font-bold hover:text-white'
                                 }`}
                         >
                             <div className="transform scale-90 md:scale-100">{item.icon}</div>

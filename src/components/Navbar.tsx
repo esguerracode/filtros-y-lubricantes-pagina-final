@@ -60,7 +60,7 @@ const Navbar: React.FC = () => {
   return (
     <nav
       className={`sticky lg:fixed top-0 left-0 w-full z-50 transition-all duration-500 ${scrolled || isOpen
-        ? 'bg-emerald-950/95 backdrop-blur-2xl py-3 border-b border-white/10 shadow-2xl'
+        ? 'neo-glass-dark py-3'
         : 'bg-emerald-950/60 backdrop-blur-xl py-6 border-b border-white/5'
         } ${isOpen ? 'h-auto overflow-visible !bg-emerald-950/98' : ''} ${showNavbar ? 'translate-y-0' : '-translate-y-full'}`}
     >
