@@ -39,7 +39,7 @@ const MobileActionBar: React.FC = () => {
                         <Link
                             key={item.path}
                             to={item.path}
-                            className={`flex flex-col items-center justify-center flex-1 py-2 px-1 transition-all duration-300 rounded-xl active:bg-white/10 active:animate-spring ${isActive ? 'text-brand-yellow font-black' : 'text-white/60 font-bold hover:text-white'
+                            className={`flex flex-col items-center justify-center flex-1 py-2 px-1 transition-all duration-300 rounded-xl active:bg-white/10 active:animate-spring mix-blend-difference ${isActive ? 'text-brand-yellow font-black' : 'text-white font-bold'
                                 }`}
                         >
                             <div className="transform scale-90 md:scale-100">{item.icon}</div>
@@ -50,13 +50,13 @@ const MobileActionBar: React.FC = () => {
 
                 <button
                     onClick={handleWhatsApp}
-                    className="flex flex-col items-center justify-center flex-1 py-1.5 text-[#4ADE80] transition-colors relative"
+                    className="flex flex-col items-center justify-center flex-1 py-1.5 transition-colors relative mix-blend-difference text-white"
                 >
                     <div className="relative transform scale-90 md:scale-100">
-                        <MessageCircle size={24} />
+                        <MessageCircle size={24} color="#4ADE80" />
                         <span className="absolute -top-1 -right-1 w-3 h-3 bg-[#4ADE80] rounded-full border-2 border-emerald-950 animate-pulse"></span>
                     </div>
-                    <span className="text-[9px] uppercase tracking-tighter mt-0.5 font-black">WhatsApp</span>
+                    <span className="text-[9px] uppercase tracking-tighter mt-0.5 font-black text-[#4ADE80]">WhatsApp</span>
                 </button>
             </div>
         </div>
