@@ -32,31 +32,31 @@ const MobileActionBar: React.FC = () => {
 
     return (
         <div className="md:hidden fixed bottom-4 left-4 right-4 z-50 pb-safe transition-all duration-500 transform [.menu-open_&]:translate-y-24 [.menu-open_&]:opacity-0 pointer-events-auto [.menu-open_&]:pointer-events-none">
-            <div className="neo-glass-dark rounded-[2rem] flex items-center justify-between p-2">
+            <div className="bg-[#054a29]/95 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)] rounded-[2rem] flex items-center justify-between p-2">
                 {navItems.map((item) => {
                     const isActive = location.pathname === item.path;
                     return (
                         <Link
                             key={item.path}
                             to={item.path}
-                            className={`flex flex-col items-center justify-center flex-1 py-2 px-1 transition-all duration-300 rounded-xl active:bg-white/10 active:animate-spring mix-blend-difference ${isActive ? 'text-brand-yellow font-black' : 'text-white font-bold'
+                            className={`flex flex-col items-center justify-center flex-1 py-2 px-1 transition-all duration-300 rounded-xl active:bg-white/10 active:animate-spring ${isActive ? 'text-brand-yellow font-black' : 'text-white/80 font-bold hover:text-white'
                                 }`}
                         >
-                            <div className="transform scale-90 md:scale-100">{item.icon}</div>
-                            <span className="text-[9px] uppercase tracking-tighter mt-0.5">{item.label}</span>
+                            <div className="transform scale-90 md:scale-100 drop-shadow-md">{item.icon}</div>
+                            <span className="text-[9px] uppercase tracking-tighter mt-1 drop-shadow-md">{item.label}</span>
                         </Link>
                     );
                 })}
 
                 <button
                     onClick={handleWhatsApp}
-                    className="flex flex-col items-center justify-center flex-1 py-1.5 transition-colors relative mix-blend-difference text-white"
+                    className="flex flex-col items-center justify-center flex-1 py-1.5 transition-colors relative text-[#4ADE80]"
                 >
-                    <div className="relative transform scale-90 md:scale-100">
-                        <MessageCircle size={24} color="#4ADE80" />
-                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-[#4ADE80] rounded-full border-2 border-emerald-950 animate-pulse"></span>
+                    <div className="relative transform scale-90 md:scale-100 drop-shadow-md">
+                        <MessageCircle size={24} />
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-[#4ADE80] rounded-full border-2 border-emerald-950 animate-pulse shadow-lg"></span>
                     </div>
-                    <span className="text-[9px] uppercase tracking-tighter mt-0.5 font-black text-[#4ADE80]">WhatsApp</span>
+                    <span className="text-[9px] uppercase tracking-tighter mt-1 font-black drop-shadow-md">WhatsApp</span>
                 </button>
             </div>
         </div>
