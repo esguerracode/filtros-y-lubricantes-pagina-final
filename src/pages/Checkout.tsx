@@ -10,6 +10,10 @@ const Checkout: React.FC = () => {
   const navigate = useNavigate();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [shippingCost, setShippingCost] = useState<number | null>(null);
+  const [shippingCarrier, setShippingCarrier] = useState<string | null>(null);
+  const [shippingDays, setShippingDays] = useState<string | null>(null);
+  const [isLoadingShipping, setIsLoadingShipping] = useState(false);
 
   // State con persistencia desde localStorage
   const [shippingData, setShippingData] = useState(() => {
@@ -41,6 +45,41 @@ const Checkout: React.FC = () => {
   useEffect(() => {
     localStorage.setItem('checkout_draft', JSON.stringify(shippingData));
   }, [shippingData]);
+
+  const calculateShipping = async (cityToSearch: string) => {
+    if (!cityToSearch || cityToSearch.trim().length < 3) return;
+    setIsLoadingShipping(true);
+    try {
+      const response = await fetch('/api/shipping/quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          city: cityToSearch,
+          items: cart
+        })
+      });
+      const data = await response.json();
+      if (data.success && data.cost !== undefined) {
+        setShippingCost(data.cost);
+        setShippingCarrier(data.carrier);
+        setShippingDays(data.estimatedDays);
+      }
+    } catch (err) {
+      console.error('Error calculando envio:', err);
+      // Fallback in case of network error
+      setShippingCost(15000);
+      setShippingCarrier('Logística Estándar (Fallback)');
+      setShippingDays('3 a 5 días hábiles');
+    } finally {
+      setIsLoadingShipping(false);
+    }
+  };
+
+  useEffect(() => {
+    if (shippingData.ciudad && shippingData.ciudad.trim().length >= 3) {
+      calculateShipping(shippingData.ciudad);
+    }
+  }, []);
 
   if (cart.length === 0) {
     navigate('/carrito');
@@ -107,6 +146,10 @@ const Checkout: React.FC = () => {
   const handleBlur = (name: string) => {
     setTouched({ ...touched, [name]: true });
     validateField(name, (shippingData as any)[name]);
+
+    if (name === 'ciudad' && (shippingData as any)[name].trim().length >= 3) {
+      calculateShipping((shippingData as any)[name]);
+    }
   };
 
   const isFormValid =
@@ -160,7 +203,9 @@ const Checkout: React.FC = () => {
       const transactionData = await createOrderAndGetWompiData(
         cart,
         customerData,
-        shippingAddress
+        shippingAddress,
+        shippingCost || 0,
+        shippingCarrier || 'Envío por Defecto'
       );
 
       localStorage.setItem('last_order_ref', transactionData.reference);
@@ -407,17 +452,44 @@ const Checkout: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Banner Envío GRATIS */}
+                    {/* Banner Envío Dinámico */}
                     <div className="bg-gradient-to-br from-emerald-50 to-green-50 border-2 border-emerald-200 rounded-[1.5rem] p-5 flex items-center gap-4">
                       <div className="w-12 h-12 bg-[#054a29] rounded-2xl flex items-center justify-center flex-shrink-0">
                         <Truck size={22} className="text-white" />
                       </div>
                       <div>
-                        <p className="font-black uppercase text-sm tracking-widest text-[#054a29]">🎉 Envío Gratis</p>
-                        <p className="text-xs text-gray-500 font-medium mt-0.5">Coordinamos la entrega contigo por WhatsApp después de confirmar tu pago.</p>
+                        {isLoadingShipping ? (
+                          <>
+                            <p className="font-black uppercase text-sm tracking-widest text-[#054a29] flex items-center gap-2">
+                              <Loader2 size={16} className="animate-spin" /> Calculando...
+                            </p>
+                            <p className="text-xs text-gray-500 font-medium mt-0.5">Buscando mejor tarifa en Mipaquete...</p>
+                          </>
+                        ) : shippingCost !== null ? (
+                          <>
+                            <p className="font-black uppercase text-sm tracking-widest text-[#054a29]">Envío Cotizado</p>
+                            <p className="text-[10px] text-gray-500 font-bold mt-0.5 leading-tight">
+                              Transportadora: {shippingCarrier} <br />
+                              Tiempo est: {shippingDays}
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="font-black uppercase text-sm tracking-widest text-[#054a29]">Costo de Envío</p>
+                            <p className="text-xs text-gray-500 font-medium mt-0.5">Ingresa tu ciudad para cotizar.</p>
+                          </>
+                        )}
                       </div>
-                      <div className="ml-auto">
-                        <span className="text-2xl font-black text-[#8cc63f]">$0</span>
+                      <div className="ml-auto text-right">
+                        {isLoadingShipping ? (
+                          <div className="h-6 w-16 bg-emerald-100 rounded animate-pulse inline-block"></div>
+                        ) : shippingCost !== null ? (
+                          <span className="text-xl md:text-2xl font-black text-[#8cc63f]">
+                            {shippingCost === 0 ? "GRATIS" : `$${shippingCost.toLocaleString('es-CO')}`}
+                          </span>
+                        ) : (
+                          <span className="text-xl md:text-2xl font-black text-gray-300">--</span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -559,7 +631,8 @@ const Checkout: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Envío</span>
                   <span className="text-xs font-black text-[#054a29] flex items-center gap-1.5">
-                    <Truck size={12} /> Gratis
+                    {isLoadingShipping ? <Loader2 size={12} className="animate-spin" /> : <Truck size={12} />}
+                    {shippingCost === null ? '--' : shippingCost === 0 ? 'Gratis' : `$${shippingCost.toLocaleString('es-CO')}`}
                   </span>
                 </div>
 
@@ -567,9 +640,9 @@ const Checkout: React.FC = () => {
                   <div>
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total a Pagar</p>
                     <p className="text-4xl font-black text-[#054a29] tracking-tighter">
-                      ${totalPrice.toLocaleString('es-CO')}
+                      ${(totalPrice + (shippingCost || 0)).toLocaleString('es-CO')}
                     </p>
-                    <p className="text-[9px] text-emerald-600 font-bold mt-1">✓ Envío incluido</p>
+                    <p className="text-[9px] text-emerald-600 font-bold mt-1">✓ Seguro protegido incluído</p>
                   </div>
                 </div>
 

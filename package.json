@@ -15,6 +15,7 @@
     "@types/md5": "^2.3.6",
     "@types/react-router-dom": "^5.3.3",
     "autoprefixer": "^10.4.23",
+    "axios": "^1.13.6",
     "clsx": "^2.1.1",
     "crypto-js": "^4.2.0",
     "jspdf": "^4.1.0",

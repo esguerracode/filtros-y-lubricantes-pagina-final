@@ -106,14 +106,18 @@ export const centsToCop = (cents: number): number => {
 export const createOrderAndGetWompiData = async (
     cart: any[],
     customerData: WompiCustomer,
-    shippingAddress: WompiShippingAddress
+    shippingAddress: WompiShippingAddress,
+    shippingCost: number = 0,
+    shippingCarrier: string = ''
 ): Promise<WompiTransactionData> => {
     const response = await fetch('/api/orders/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             items: cart,
-            customer: { ...customerData, city: shippingAddress.city }
+            customer: { ...customerData, city: shippingAddress.city },
+            shippingCost,
+            shippingCarrier
         })
     });
 

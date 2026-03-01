@@ -17,7 +17,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
 
   try {
-    const { items, customer } = req.body;
+    const { items, customer, shippingCost = 0, shippingCarrier = '' } = req.body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'Invalid items' });
@@ -25,7 +25,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const calculatedTotal = items.reduce((acc: number, item: any) => {
       return acc + (parseFloat(item.price) * Number(item.quantity));
-    }, 0);
+    }, 0) + Number(shippingCost);
 
     if (calculatedTotal <= 0) {
       return res.status(400).json({ error: 'Invalid total amount' });
@@ -53,13 +53,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       })
       .join('\n');
 
+    let shippingText = Number(shippingCost) === 0 ? 'Gratis' : `$${Number(shippingCost).toLocaleString('es-CO')} COP`;
+    if (shippingCarrier) shippingText += ` (${shippingCarrier})`;
+
     await sendTelegram(
       `🛒 <b>NUEVA ORDEN</b> #${reference}\n\n` +
       `<b>Cliente:</b> ${customer?.fullName || 'N/A'}\n` +
       `<b>Email:</b> ${customer?.email || 'N/A'}\n` +
       `<b>Tel:</b> ${customer?.phoneNumber || 'N/A'}\n` +
-      `<b>Ciudad:</b> ${customer?.city || 'N/A'}\n\n` +
-      `<b>Productos:</b>\n${itemsList}\n\n` +
+      `<b>Ciudad/Direcc:</b> ${customer?.city || 'N/A'}\n\n` +
+      `<b>Productos:</b>\n${itemsList}\n` +
+      `<b>Envío:</b> ${shippingText}\n\n` +
       `<b>TOTAL: $${calculatedTotal.toLocaleString('es-CO')} COP</b>\n` +
       `<b>Estado:</b> ⏳ Esperando pago Wompi`
     );

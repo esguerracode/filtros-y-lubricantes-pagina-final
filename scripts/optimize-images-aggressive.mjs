@@ -6,9 +6,7 @@ import { join } from 'path';
 const DIR = './public/images/products';
 const MAX_BYTES = 200 * 1024;  // 200 KB
 const TARGET_SIZE = 1024;
-
-// Archivos que aún supera el límite
-const TARGETS = ['109.png', '110.png', '126.png', '128.png', '129.png', '133.png'];
+const TARGETS = ['101.png', '103.png', '104.png', '106.png', '107.png', '108.png'];
 
 // También intentar los que no se actualizaron (fotos de Amazon sin transparencia)
 // Estrategia: reducir dimensiones hasta que quede <200KB
