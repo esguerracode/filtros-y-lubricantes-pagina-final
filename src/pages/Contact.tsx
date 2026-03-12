@@ -10,6 +10,8 @@ const Contact: React.FC = () => {
     mensaje: ''
   });
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -24,8 +26,72 @@ const Contact: React.FC = () => {
     return () => clearTimeout(timer);
   }, [slotsRemaining]);
 
+  const validateField = (name: string, value: string) => {
+    const newErrors = { ...errors };
+    if (name === 'nombre') {
+      if (!value || value.trim().length < 2) {
+        newErrors.nombre = 'Mínimo 2 caracteres';
+      } else {
+        delete newErrors.nombre;
+      }
+    }
+    if (name === 'telefono') {
+      const cleanPhone = value.replace(/\D/g, '');
+      if (!cleanPhone) {
+        newErrors.telefono = 'Requerido';
+      } else if (cleanPhone.length !== 10) {
+        newErrors.telefono = 'Debe tener 10 dígitos';
+      } else {
+        delete newErrors.telefono;
+      }
+    }
+    if (name === 'email' && value) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        newErrors.email = 'Email inválido';
+      } else {
+        delete newErrors.email;
+      }
+    }
+    if (name === 'mensaje') {
+      if (!value || value.trim().length < 5) {
+        newErrors.mensaje = 'Mínimo 5 caracteres';
+      } else {
+        delete newErrors.mensaje;
+      }
+    }
+    setErrors(newErrors);
+  };
+
+  const handleInputChange = (name: string, value: string) => {
+    let finalValue = value;
+    if (name === 'telefono') {
+      finalValue = value.replace(/\D/g, '').slice(0, 10);
+    }
+    setFormData({ ...formData, [name]: finalValue });
+    if (touched[name]) validateField(name, finalValue);
+  };
+
+  const handleBlur = (name: string) => {
+    setTouched({ ...touched, [name]: true });
+    validateField(name, formData[name as keyof typeof formData]);
+  };
+
+  const isFormValid =
+    formData.nombre.trim().length >= 2 &&
+    formData.telefono.length === 10 &&
+    formData.mensaje.trim().length >= 5 &&
+    Object.keys(errors).length === 0;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isFormValid) {
+      const allTouched: Record<string, boolean> = {};
+      Object.keys(formData).forEach(key => allTouched[key] = true);
+      setTouched(allTouched);
+      return;
+    }
+
     setIsSubmitting(true);
     setErrorMessage('');
 
@@ -44,6 +110,8 @@ const Contact: React.FC = () => {
 
       // Limpiar formulario y mostrar éxito
       setFormData({ nombre: '', email: '', telefono: '', mensaje: '' });
+      setTouched({});
+      setErrors({});
       setIsSuccess(true);
 
       // Ocultar mensaje de éxito después de 5 segundos
@@ -84,7 +152,7 @@ const Contact: React.FC = () => {
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-yellow/10 text-emerald-900 text-xs font-black uppercase tracking-widest mb-6 border border-brand-yellow/20">
                 <Users size={14} className="text-emerald-950" /> Canal para Empresas y Flotas
               </div>
-              <h1 className="text-4xl md:text-8xl font-[1000] text-gray-950 mb-8 tracking-tighter leading-[0.85] uppercase">
+              <h1 className="text-4xl md:text-8xl font-[1000] text-gray-950 mb-8 tracking-tighter leading-[0.85] uppercase break-words">
                 Expertos al <span className="text-emerald-700">Rescate.</span>
               </h1>
               <p className="text-xl text-gray-600 max-w-lg leading-relaxed font-medium mb-12">
@@ -130,7 +198,7 @@ const Contact: React.FC = () => {
               </div>
 
               <div className="relative z-10">
-                <h2 className="text-4xl font-[1000] text-gray-950 mb-4 uppercase tracking-tighter">
+                <h2 className="text-3xl sm:text-4xl font-[1000] text-gray-950 mb-4 uppercase tracking-tighter break-words">
                   Solicitar <span className="text-emerald-700 italic">Prioridad 1</span>
                 </h2>
                 <p className="text-gray-500 mb-10 font-medium text-lg">
@@ -144,22 +212,43 @@ const Contact: React.FC = () => {
                       <input
                         required
                         type="text"
-                        className="w-full px-8 py-5 bg-gray-50/50 border border-gray-100 rounded-[2rem] focus:ring-4 focus:ring-emerald-50 focus:border-brand-yellow outline-none transition-all font-bold text-gray-950 placeholder:text-gray-300"
+                        className={`w-full px-8 py-5 bg-gray-50/50 border rounded-[2rem] focus:ring-4 focus:ring-emerald-50 outline-none transition-all font-bold text-gray-950 placeholder:text-gray-300 ${
+                          touched.nombre && errors.nombre
+                            ? 'border-red-400 bg-red-50/30'
+                            : touched.nombre && !errors.nombre
+                            ? 'border-emerald-400 bg-emerald-50/30'
+                            : 'border-gray-100'
+                        }`}
                         placeholder="Ingresa tu nombre o empresa"
                         value={formData.nombre}
-                        onChange={e => setFormData({ ...formData, nombre: e.target.value })}
+                        onChange={e => handleInputChange('nombre', e.target.value)}
+                        onBlur={() => handleBlur('nombre')}
                       />
+                      {touched.nombre && errors.nombre && (
+                        <p className="text-red-500 text-[10px] font-bold ml-1 uppercase">{errors.nombre}</p>
+                      )}
                     </div>
                     <div className="space-y-3">
                       <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Teléfono Directo</label>
                       <input
                         required
                         type="tel"
-                        className="w-full px-8 py-5 bg-gray-50/50 border border-gray-100 rounded-[2rem] focus:ring-4 focus:ring-emerald-50 focus:border-brand-yellow outline-none transition-all font-bold text-gray-950 placeholder:text-gray-300"
+                        maxLength={10}
+                        className={`w-full px-8 py-5 bg-gray-50/50 border rounded-[2rem] focus:ring-4 focus:ring-emerald-50 outline-none transition-all font-bold text-gray-950 placeholder:text-gray-300 ${
+                          touched.telefono && errors.telefono
+                            ? 'border-red-400 bg-red-50/30'
+                            : touched.telefono && !errors.telefono
+                            ? 'border-emerald-400 bg-emerald-50/30'
+                            : 'border-gray-100'
+                        }`}
                         placeholder="Ej: 314 000 0000"
                         value={formData.telefono}
-                        onChange={e => setFormData({ ...formData, telefono: e.target.value })}
+                        onChange={e => handleInputChange('telefono', e.target.value)}
+                        onBlur={() => handleBlur('telefono')}
                       />
+                      {touched.telefono && errors.telefono && (
+                        <p className="text-red-500 text-[10px] font-bold ml-1 uppercase">{errors.telefono}</p>
+                      )}
                     </div>
                   </div>
 
@@ -168,11 +257,21 @@ const Contact: React.FC = () => {
                     <textarea
                       required
                       rows={4}
-                      className="w-full px-8 py-5 bg-gray-50/50 border border-gray-100 rounded-[2rem] focus:ring-4 focus:ring-emerald-50 focus:border-brand-yellow outline-none transition-all font-bold text-gray-950 placeholder:text-gray-300 resize-none"
+                      className={`w-full px-8 py-5 bg-gray-50/50 border rounded-[2rem] focus:ring-4 focus:ring-emerald-50 outline-none transition-all font-bold text-gray-950 placeholder:text-gray-300 resize-none ${
+                        touched.mensaje && errors.mensaje
+                          ? 'border-red-400 bg-red-50/30'
+                          : touched.mensaje && !errors.mensaje
+                          ? 'border-emerald-400 bg-emerald-50/30'
+                          : 'border-gray-100'
+                      }`}
                       placeholder="Ej: Necesito 20 filtros para tractor John Deere urgente..."
                       value={formData.mensaje}
-                      onChange={e => setFormData({ ...formData, mensaje: e.target.value })}
+                      onChange={e => handleInputChange('mensaje', e.target.value)}
+                      onBlur={() => handleBlur('mensaje')}
                     />
+                    {touched.mensaje && errors.mensaje && (
+                      <p className="text-red-500 text-[10px] font-bold ml-1 uppercase">{errors.mensaje}</p>
+                    )}
                   </div>
 
                   {errorMessage && (
