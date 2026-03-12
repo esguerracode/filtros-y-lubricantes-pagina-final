@@ -90,7 +90,7 @@ const Home: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/20 to-black"></div>
 
         <div className="relative z-10 w-full max-w-[1400px] mx-auto px-4 md:px-12 flex flex-col items-center justify-center h-full text-center pt-20 pb-24 lg:pt-24 lg:pb-0">
-          <div className="w-full max-w-xs px-2 mb-1 md:mb-6 animate-fade-in-up">
+          <div className="w-full max-w-xs px-2 mb-1 md:mb-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-2 md:p-3 flex items-center justify-between shadow-2xl overflow-hidden group">
               <div className="flex items-center gap-2">
                 <div className="relative">
@@ -106,7 +106,7 @@ const Home: React.FC = () => {
             </div>
           </div>
 
-          <div className="mb-2 md:mb-6 animate-fade-in group">
+          <div className="mb-2 md:mb-6 animate-fade-in-scale" style={{ animationDelay: '0.3s' }}>
             <img
               src="/logos/isotipo2.png"
               alt="Filtros y Lubricantes Logo"
@@ -114,7 +114,7 @@ const Home: React.FC = () => {
             />
           </div>
 
-          <div className="max-w-5xl space-y-1 md:space-y-2 animate-fade-in">
+          <div className="max-w-5xl space-y-1 md:space-y-2 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
             <p className="text-[#d4e157] font-black uppercase tracking-[0.2em] md:tracking-[0.4em] text-[7px] md:text-[10px] border-b border-[#d4e157]/30 pb-0.5 inline-block">
               META & CASANARE • COLOMBIA • PUERTO GAITÁN - YOPAL
             </p>
@@ -122,11 +122,11 @@ const Home: React.FC = () => {
             <h1 className="text-white text-[1.5rem] sm:text-5xl md:text-6xl lg:text-7xl font-[1000] leading-[0.95] tracking-tighter uppercase select-none drop-shadow-2xl">
               FILTROS & LUBRICANTES
               <br />
-              <span className="text-[#d4e157] text-[1rem] sm:text-4xl md:text-5xl lg:text-6xl">del Llano S.A.S</span>
+              <span className="text-[#d4e157] text-[1rem] sm:text-4xl md:text-5xl lg:text-6xl animate-fade-in-up" style={{ animationDelay: '0.8s', display: 'inline-block' }}>del Llano S.A.S</span>
             </h1>
 
             {/* NEW: Trust Banner (Mobile Friendly) */}
-            <div className="flex flex-wrap items-center justify-center gap-2 py-2 animate-fade-in-up delay-300">
+            <div className="flex flex-wrap items-center justify-center gap-2 py-2 animate-fade-in-up" style={{ animationDelay: '1s' }}>
               <span className="flex items-center gap-1 px-3 py-1 bg-emerald-500/20 rounded-full border border-emerald-500/30 text-[8px] md:text-[9px] font-black text-emerald-400 uppercase tracking-widest whitespace-nowrap">
                 <ShieldCheck size={10} /> Empresa Certificada
               </span>
@@ -135,11 +135,11 @@ const Home: React.FC = () => {
               </span>
             </div>
 
-            <p className="text-white/80 text-xs md:text-base font-medium max-w-xl mx-auto drop-shadow-md leading-tight mt-2">
+            <p className="text-white/80 text-xs md:text-base font-medium max-w-xl mx-auto drop-shadow-md leading-tight mt-2 animate-fade-in-up" style={{ animationDelay: '1.2s' }}>
               Expertos en maquinaria agrícola e industrial, transporte pesado y vehículos de alto rendimiento. 🚜🚚
             </p>
 
-            <div className="pt-4 md:pt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <div className="pt-4 md:pt-8 flex flex-col sm:flex-row items-center justify-center gap-3 animate-fade-in-up" style={{ animationDelay: '1.4s' }}>
               <Link
                 to="/productos"
                 className="bg-[#d4e157] text-black hover:bg-white px-8 md:px-14 py-3 md:py-4 rounded-full font-black text-xs md:text-base transition-all shadow-xl uppercase tracking-widest active:scale-95 w-full sm:w-auto"
@@ -188,7 +188,7 @@ const Home: React.FC = () => {
       <section className="py-16 md:py-24 bg-white relative -mt-8 md:-mt-32 z-30 rounded-t-[3rem] md:rounded-none">
         <div className="max-w-[1400px] mx-auto px-6">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-6">
-            <Link to="/productos" className="group lg:col-span-2 bg-gradient-to-br from-[#054a29] to-[#033a20] p-8 md:p-10 rounded-[3rem] shadow-2xl hover:-translate-y-4 hover:shadow-[0_20px_50px_rgba(5,74,41,0.3)] transition-all duration-500 flex flex-col justify-between border border-white/5 overflow-hidden relative min-h-[250px] md:min-h-[300px] active:animate-spring">
+            <Link to="/productos" className="group lg:col-span-2 bg-gradient-to-br from-[#054a29] to-[#033a20] p-8 md:p-10 rounded-[3rem] shadow-2xl hover:-translate-y-4 hover:shadow-[0_20px_50px_rgba(5,74,41,0.3)] transition-all duration-500 flex flex-col justify-between border border-white/5 overflow-hidden relative min-h-[250px] md:min-h-[300px] active:animate-spring animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-[#d4e157]/10 transition-colors"></div>
               <div className="bg-[#d4e157] w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center text-black shadow-lg mb-6 md:mb-8 transform -rotate-12 group-hover:rotate-0 transition-transform">
                 <Droplets size={24} className="md:w-7 md:h-7" />
@@ -228,7 +228,7 @@ const Home: React.FC = () => {
               </div>
             </Link>
 
-            <Link to="/productos" className="group lg:col-span-3 lg:col-start-2 bg-[#d4e157] p-8 md:p-10 rounded-[3rem] shadow-2xl hover:-translate-y-4 hover:shadow-[0_20px_50px_rgba(212,225,87,0.3)] transition-all duration-500 flex flex-col justify-between border border-white/20 overflow-hidden relative min-h-[250px] md:min-h-[300px] active:animate-spring">
+            <Link to="/productos" className="group lg:col-span-3 lg:col-start-2 bg-[#d4e157] p-8 md:p-10 rounded-[3rem] shadow-2xl hover:-translate-y-4 hover:shadow-[0_20px_50px_rgba(212,225,87,0.3)] transition-all duration-500 flex flex-col justify-between border border-white/20 overflow-hidden relative min-h-[250px] md:min-h-[300px] active:animate-spring animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
               <div className="bg-black w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center text-[#d4e157] shadow-lg mb-6 md:mb-8 transform rotate-12 group-hover:rotate-0 transition-transform">
                 <Disc size={24} className="md:w-7 md:h-7" />
               </div>
@@ -296,7 +296,7 @@ const Home: React.FC = () => {
 
             <div className="relative z-10 w-full md:w-1/3 aspect-square bg-white rounded-[4rem] p-8 shadow-2xl rotate-3 flex items-center justify-center">
               <div className="text-center">
-                <div className="text-8xl font-black text-gray-900 leading-none">10<span className="text-emerald-green">+</span>1</div>
+                <div className="text-6xl sm:text-8xl font-black text-gray-900 leading-none">10<span className="text-emerald-green">+</span>1</div>
                 <div className="text-sm font-black text-gray-400 uppercase tracking-widest mt-4">Unidades de Potencia</div>
               </div>
             </div>
@@ -364,7 +364,7 @@ const Home: React.FC = () => {
       <section className="py-32 bg-white">
         <div className="max-w-[1400px] mx-auto px-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
-            <h2 className="text-5xl md:text-7xl font-black text-black tracking-tighter uppercase">Destacados</h2>
+            <h2 className="text-4xl sm:text-5xl md:text-7xl font-black text-black tracking-tighter uppercase break-words">Destacados</h2>
             <Link to="/productos" className="text-emerald-green font-black flex items-center gap-2 hover:underline tracking-tight">
               Todos los productos <ArrowRight size={20} />
             </Link>
